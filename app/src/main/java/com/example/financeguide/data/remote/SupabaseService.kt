@@ -68,12 +68,14 @@ interface SupabaseApi {
     @POST("auth/v1/signup")
     suspend fun signUp(
         @Header("apikey") apiKey: String,
+        @Header("Authorization") token: String,
         @Body request: SupabaseSignUpRequest
     ): Response<SupabaseAuthResponse>
 
     @POST("auth/v1/token?grant_type=password")
     suspend fun signIn(
         @Header("apikey") apiKey: String,
+        @Header("Authorization") token: String,
         @Body request: SupabaseSignInRequest
     ): Response<SupabaseAuthResponse>
 

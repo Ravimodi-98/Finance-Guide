@@ -292,6 +292,7 @@ fun LoginScreen(
                                     // 1. SIGN UP API
                                     val response = SupabaseClient.api.signUp(
                                         apiKey = SupabaseClient.API_KEY,
+                                        token = "Bearer ${SupabaseClient.API_KEY}",
                                         request = SupabaseSignUpRequest(
                                             email = email,
                                             password = password,
@@ -318,6 +319,7 @@ fun LoginScreen(
                                     // 2. SIGN IN API
                                     val response = SupabaseClient.api.signIn(
                                         apiKey = SupabaseClient.API_KEY,
+                                        token = "Bearer ${SupabaseClient.API_KEY}",
                                         request = SupabaseSignInRequest(
                                             email = email,
                                             password = password
