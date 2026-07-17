@@ -28,7 +28,7 @@ data class SupabaseUser(
 )
 
 data class SupabaseAuthResponse(
-    @SerializedName("access_token") val accessToken: String,
+    @SerializedName("access_token") val accessToken: String?,
     @SerializedName("user") val user: SupabaseUser
 )
 

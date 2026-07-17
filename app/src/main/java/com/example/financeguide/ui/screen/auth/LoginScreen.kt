@@ -302,18 +302,31 @@ fun LoginScreen(
                                     
                                     if (response.isSuccessful && response.body() != null) {
                                         val body = response.body()!!
-                                        Toast.makeText(context, "Registration successful!", Toast.LENGTH_SHORT).show()
-                                        
-                                        // Auto login on successful signup
-                                        onLoginSuccess(
-                                            body.user.userMetadata?.name ?: name,
-                                            email,
-                                            body.user.userMetadata?.avatar ?: selectedAvatar,
-                                            body.accessToken
-                                        )
+                                        val token = body.accessToken
+                                        if (token != null && token.isNotEmpty()) {
+                                            Toast.makeText(context, "Welcome aboard, $name!", Toast.LENGTH_SHORT).show()
+                                            onLoginSuccess(
+                                                body.user.userMetadata?.name ?: name,
+                                                email,
+                                                body.user.userMetadata?.avatar ?: selectedAvatar,
+                                                token
+                                            )
+                                        } else {
+                                            // Email confirmation is enabled in Supabase settings
+                                            Toast.makeText(
+                                                context,
+                                                "Registration successful! Please check your inbox and verify your email before logging in.",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                            isSignUpMode = false // Switch to Sign In mode
+                                        }
                                     } else {
-                                        val errBody = response.errorBody()?.string() ?: "Unknown error"
-                                        Toast.makeText(context, "Sign up failed: $errBody", Toast.LENGTH_LONG).show()
+                                        val errBody = response.errorBody()?.string() ?: ""
+                                        val cleanMessage = when {
+                                            errBody.contains("User already exists") -> "A pirate is already registered with this email!"
+                                            else -> parseSupabaseErrorMessage(errBody, "Registration failed")
+                                        }
+                                        Toast.makeText(context, cleanMessage, Toast.LENGTH_LONG).show()
                                     }
                                 } else {
                                     // 2. SIGN IN API
@@ -328,14 +341,24 @@ fun LoginScreen(
 
                                     if (response.isSuccessful && response.body() != null) {
                                         val body = response.body()!!
-                                        val metadataName = body.user.userMetadata?.name ?: "Pirate Crew"
-                                        val metadataAvatar = body.user.userMetadata?.avatar ?: "Luffy"
-                                        
-                                        Toast.makeText(context, "Welcome back, $metadataName!", Toast.LENGTH_SHORT).show()
-                                        onLoginSuccess(metadataName, email, metadataAvatar, body.accessToken)
+                                        val token = body.accessToken
+                                        if (token != null && token.isNotEmpty()) {
+                                            val metadataName = body.user.userMetadata?.name ?: "Pirate Crew"
+                                            val metadataAvatar = body.user.userMetadata?.avatar ?: "Luffy"
+                                            
+                                            Toast.makeText(context, "Welcome back, $metadataName!", Toast.LENGTH_SHORT).show()
+                                            onLoginSuccess(metadataName, email, metadataAvatar, token)
+                                        } else {
+                                            Toast.makeText(context, "Access token missing", Toast.LENGTH_LONG).show()
+                                        }
                                     } else {
-                                        val errBody = response.errorBody()?.string() ?: "Invalid credentials"
-                                        Toast.makeText(context, "Sign in failed: $errBody", Toast.LENGTH_LONG).show()
+                                        val errBody = response.errorBody()?.string() ?: ""
+                                        val cleanMessage = when {
+                                            errBody.contains("email_not_confirmed") -> "Please confirm your email address first! Check your inbox."
+                                            errBody.contains("invalid_credentials") -> "Invalid email or password."
+                                            else -> parseSupabaseErrorMessage(errBody, "Sign in failed")
+                                        }
+                                        Toast.makeText(context, cleanMessage, Toast.LENGTH_LONG).show()
                                     }
                                 }
                             } catch (e: Exception) {
@@ -390,3 +413,20 @@ fun LoginScreen(
 }
 
 data class AvatarOption(val name: String, val emoji: String, val themeColor: Color)
+
+fun parseSupabaseErrorMessage(rawJson: String, default: String): String {
+    return try {
+        val search = "\"msg\":\""
+        val index = rawJson.indexOf(search)
+        if (index != -1) {
+            val start = index + search.length
+            val end = rawJson.indexOf("\"", start)
+            if (end != -1) {
+                return rawJson.substring(start, end)
+            }
+        }
+        if (rawJson.isNotEmpty()) rawJson else default
+    } catch (e: Exception) {
+        default
+    }
+}
