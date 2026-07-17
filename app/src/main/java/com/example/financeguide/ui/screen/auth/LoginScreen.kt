@@ -310,15 +310,20 @@ fun LoginScreen(
                                                 email,
                                                 body.user.userMetadata?.avatar ?: selectedAvatar,
                                                 token
-                                            )
+                                              )
                                         } else {
-                                            // Email confirmation is enabled in Supabase settings
+                                            // Email confirmation is enabled on Supabase, log in offline so the user isn't blocked
                                             Toast.makeText(
                                                 context,
-                                                "Registration successful! Please check your inbox and verify your email before logging in.",
+                                                "Registration successful! Logging in...",
                                                 Toast.LENGTH_LONG
                                             ).show()
-                                            isSignUpMode = false // Switch to Sign In mode
+                                            onLoginSuccess(
+                                                if (name.isBlank()) "Pirate" else name,
+                                                email,
+                                                selectedAvatar,
+                                                ""
+                                            )
                                         }
                                     } else {
                                         val errBody = response.errorBody()?.string() ?: ""
@@ -330,7 +335,6 @@ fun LoginScreen(
                                         }
                                         Toast.makeText(context, cleanMessage, Toast.LENGTH_LONG).show()
                                         if (isRateLimit) {
-                                            // Auto-embark offline on rate limit to prevent getting stuck
                                             onLoginSuccess(
                                                 if (name.isBlank()) "Pirate" else name,
                                                 email,
@@ -365,14 +369,15 @@ fun LoginScreen(
                                     } else {
                                         val errBody = response.errorBody()?.string() ?: ""
                                         val isRateLimit = errBody.contains("rate_limit") || errBody.contains("rate limit") || response.code() == 429
+                                        val isEmailNotConfirmed = errBody.contains("email_not_confirmed")
                                         val cleanMessage = when {
-                                            errBody.contains("email_not_confirmed") -> "Please confirm your email address first! Check your inbox."
+                                            isEmailNotConfirmed -> "Confirm email is pending. Logging in..."
                                             errBody.contains("invalid_credentials") -> "Invalid email or password."
                                             isRateLimit -> "Rate limit exceeded! Logging in offline instead..."
                                             else -> parseSupabaseErrorMessage(errBody, "Sign in failed")
                                         }
                                         Toast.makeText(context, cleanMessage, Toast.LENGTH_LONG).show()
-                                        if (isRateLimit) {
+                                        if (isRateLimit || isEmailNotConfirmed) {
                                             onLoginSuccess("Pirate", email, selectedAvatar, "")
                                         }
                                     }
