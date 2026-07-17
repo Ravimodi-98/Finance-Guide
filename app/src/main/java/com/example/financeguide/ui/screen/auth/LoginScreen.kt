@@ -322,11 +322,22 @@ fun LoginScreen(
                                         }
                                     } else {
                                         val errBody = response.errorBody()?.string() ?: ""
+                                        val isRateLimit = errBody.contains("rate_limit") || errBody.contains("rate limit") || response.code() == 429
                                         val cleanMessage = when {
                                             errBody.contains("User already exists") -> "A pirate is already registered with this email!"
+                                            isRateLimit -> "Rate limit exceeded! Logging in offline instead..."
                                             else -> parseSupabaseErrorMessage(errBody, "Registration failed")
                                         }
                                         Toast.makeText(context, cleanMessage, Toast.LENGTH_LONG).show()
+                                        if (isRateLimit) {
+                                            // Auto-embark offline on rate limit to prevent getting stuck
+                                            onLoginSuccess(
+                                                if (name.isBlank()) "Pirate" else name,
+                                                email,
+                                                selectedAvatar,
+                                                ""
+                                            )
+                                        }
                                     }
                                 } else {
                                     // 2. SIGN IN API
@@ -353,16 +364,27 @@ fun LoginScreen(
                                         }
                                     } else {
                                         val errBody = response.errorBody()?.string() ?: ""
+                                        val isRateLimit = errBody.contains("rate_limit") || errBody.contains("rate limit") || response.code() == 429
                                         val cleanMessage = when {
                                             errBody.contains("email_not_confirmed") -> "Please confirm your email address first! Check your inbox."
                                             errBody.contains("invalid_credentials") -> "Invalid email or password."
+                                            isRateLimit -> "Rate limit exceeded! Logging in offline instead..."
                                             else -> parseSupabaseErrorMessage(errBody, "Sign in failed")
                                         }
                                         Toast.makeText(context, cleanMessage, Toast.LENGTH_LONG).show()
+                                        if (isRateLimit) {
+                                            onLoginSuccess("Pirate", email, selectedAvatar, "")
+                                        }
                                     }
                                 }
                             } catch (e: Exception) {
-                                Toast.makeText(context, "Connection error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                                val isRateLimit = e.localizedMessage?.contains("429") == true || e.localizedMessage?.contains("rate") == true
+                                if (isRateLimit) {
+                                    Toast.makeText(context, "Rate limit exceeded! Logging in offline instead...", Toast.LENGTH_LONG).show()
+                                    onLoginSuccess(if (name.isBlank()) "Pirate" else name, email, selectedAvatar, "")
+                                } else {
+                                    Toast.makeText(context, "Connection error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                                }
                             } finally {
                                 isLoading = false
                             }
