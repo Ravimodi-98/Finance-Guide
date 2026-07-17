@@ -1,63 +1,55 @@
 package com.example.financeguide.data.remote
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.*
 
 // --- Auth DTOs ---
 
-@JsonClass(generateAdapter = true)
 data class SupabaseUserMetadata(
-    @Json(name = "name") val name: String,
-    @Json(name = "avatar") val avatar: String
+    @SerializedName("name") val name: String,
+    @SerializedName("avatar") val avatar: String
 )
 
-@JsonClass(generateAdapter = true)
 data class SupabaseSignUpRequest(
-    @Json(name = "email") val email: String,
-    @Json(name = "password") val password: String,
-    @Json(name = "data") val data: SupabaseUserMetadata
+    @SerializedName("email") val email: String,
+    @SerializedName("password") val password: String,
+    @SerializedName("data") val data: SupabaseUserMetadata
 )
 
-@JsonClass(generateAdapter = true)
 data class SupabaseSignInRequest(
-    @Json(name = "email") val email: String,
-    @Json(name = "password") val password: String
+    @SerializedName("email") val email: String,
+    @SerializedName("password") val password: String
 )
 
-@JsonClass(generateAdapter = true)
 data class SupabaseUser(
-    @Json(name = "id") val id: String,
-    @Json(name = "user_metadata") val userMetadata: SupabaseUserMetadata?
+    @SerializedName("id") val id: String,
+    @SerializedName("user_metadata") val userMetadata: SupabaseUserMetadata?
 )
 
-@JsonClass(generateAdapter = true)
 data class SupabaseAuthResponse(
-    @Json(name = "access_token") val accessToken: String,
-    @Json(name = "user") val user: SupabaseUser
+    @SerializedName("access_token") val accessToken: String,
+    @SerializedName("user") val user: SupabaseUser
 )
 
 // --- Database DTOs ---
 
-@JsonClass(generateAdapter = true)
 data class SupabaseTransaction(
-    @Json(name = "id") val id: Long? = null,
-    @Json(name = "amount") val amount: Double,
-    @Json(name = "title") val title: String,
-    @Json(name = "category") val category: String,
-    @Json(name = "type") val type: String,
-    @Json(name = "date") val date: Long,
-    @Json(name = "note") val note: String?,
-    @Json(name = "is_recurring") val isRecurring: Boolean
+    @SerializedName("id") val id: Long? = null,
+    @SerializedName("amount") val amount: Double,
+    @SerializedName("title") val title: String,
+    @SerializedName("category") val category: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("date") val date: Long,
+    @SerializedName("note") val note: String?,
+    @SerializedName("is_recurring") val isRecurring: Boolean
 )
 
-@JsonClass(generateAdapter = true)
 data class SupabaseBudget(
-    @Json(name = "id") val id: Long? = null,
-    @Json(name = "category") val category: String,
-    @Json(name = "month_year") val monthYear: String,
-    @Json(name = "limit_amount") val limitAmount: Double
+    @SerializedName("id") val id: Long? = null,
+    @SerializedName("category") val category: String,
+    @SerializedName("month_year") val monthYear: String,
+    @SerializedName("limit_amount") val limitAmount: Double
 )
 
 // --- Supabase API Interface ---
