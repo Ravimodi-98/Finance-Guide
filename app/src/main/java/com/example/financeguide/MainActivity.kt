@@ -182,8 +182,8 @@ class MainActivity : ComponentActivity() {
                             }
                         } else if (!isLoggedIn) {
                             LoginScreen(
-                                onLoginSuccess = { selectedName, selectedEmail, selectedAvatar ->
-                                    settingsManager.saveUserLogin(selectedName, selectedEmail, selectedAvatar)
+                                onLoginSuccess = { selectedName, selectedEmail, selectedAvatar, selectedToken ->
+                                    settingsManager.saveUserLogin(selectedName, selectedEmail, selectedAvatar, selectedToken)
                                 }
                             )
                         } else if (!onboardingCompleted) {

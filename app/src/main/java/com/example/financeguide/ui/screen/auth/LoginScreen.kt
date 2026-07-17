@@ -1,8 +1,7 @@
 package com.example.financeguide.ui.screen.auth
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -30,12 +30,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.financeguide.StrawHatIcon
+import com.example.financeguide.data.remote.*
 import com.example.financeguide.theme.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (name: String, email: String, avatar: String) -> Unit
+    onLoginSuccess: (name: String, email: String, avatar: String, token: String) -> Unit
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    var isSignUpMode by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -84,7 +92,7 @@ fun LoginScreen(
             )
 
             Text(
-                text = "Pirate Crew Sign In",
+                text = if (isSignUpMode) "Join the Crew" else "Pirate Crew Sign In",
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
@@ -92,7 +100,9 @@ fun LoginScreen(
             )
 
             Text(
-                text = "Enter your credentials and select your crew member profile to embark.",
+                text = if (isSignUpMode) 
+                    "Create your pirate account and select your crew avatar to start." 
+                    else "Enter your credentials to manage your Beli and check bounty lists.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.6f),
                 textAlign = TextAlign.Center,
@@ -101,35 +111,36 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Name Field
-            OutlinedTextField(
-                value = name,
-                onValueChange = {
-                    name = it
-                    nameError = null
-                },
-                label = { Text("Pirate Name") },
-                leadingIcon = { Icon(Icons.Rounded.Person, contentDescription = null, tint = Secondary) },
-                isError = nameError != null,
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Secondary,
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
-                    focusedLabelColor = Secondary,
-                    unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
+            // Name Field (Only shown in Sign Up mode)
+            if (isSignUpMode) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                        nameError = null
+                    },
+                    label = { Text("Pirate Name") },
+                    leadingIcon = { Icon(Icons.Rounded.Person, contentDescription = null, tint = Secondary) },
+                    isError = nameError != null,
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Secondary,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
+                        focusedLabelColor = Secondary,
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
+                    )
                 )
-            )
-            AnimatedVisibility(visible = nameError != null) {
-                Text(
-                    text = nameError ?: "",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.align(Alignment.Start).padding(start = 4.dp, top = 2.dp)
-                )
+                AnimatedVisibility(visible = nameError != null) {
+                    Text(
+                        text = nameError ?: "",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.align(Alignment.Start).padding(start = 4.dp, top = 2.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
 
             // Email Field
             OutlinedTextField(
@@ -201,54 +212,55 @@ fun LoginScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // Crew Avatar Selection (Only shown in Sign Up mode)
+            if (isSignUpMode) {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Choose Crew Identity",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Secondary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Start)
+                )
 
-            // Crew Avatar Selection
-            Text(
-                text = "Choose Crew Identity",
-                style = MaterialTheme.typography.titleMedium,
-                color = Secondary,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Start)
-            )
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                avatars.forEach { option ->
-                    val isSelected = selectedAvatar == option.name
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .clickable { selectedAvatar = option.name }
-                            .padding(4.dp)
-                    ) {
-                        Box(
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    avatars.forEach { option ->
+                        val isSelected = selectedAvatar == option.name
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                                .background(if (isSelected) option.themeColor.copy(alpha = 0.25f) else SurfaceDarkVariant)
-                                .border(
-                                    border = BorderStroke(
-                                        width = if (isSelected) 3.dp else 1.dp,
-                                        color = if (isSelected) option.themeColor else Color.White.copy(alpha = 0.1f)
-                                    ),
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
+                                .clickable { selectedAvatar = option.name }
+                                .padding(4.dp)
                         ) {
-                            Text(text = option.emoji, fontSize = 26.sp)
+                            Box(
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isSelected) option.themeColor.copy(alpha = 0.25f) else SurfaceDarkVariant)
+                                    .border(
+                                        border = BorderStroke(
+                                            width = if (isSelected) 3.dp else 1.dp,
+                                            color = if (isSelected) option.themeColor else Color.White.copy(alpha = 0.1f)
+                                        ),
+                                        shape = CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(text = option.emoji, fontSize = 26.sp)
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = option.name,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) option.themeColor else Color.White.copy(alpha = 0.6f)
+                            )
                         }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = option.name,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) option.themeColor else Color.White.copy(alpha = 0.6f)
-                        )
                     }
                 }
             }
@@ -259,7 +271,7 @@ fun LoginScreen(
             Button(
                 onClick = {
                     var hasError = false
-                    if (name.isBlank()) {
+                    if (isSignUpMode && name.isBlank()) {
                         nameError = "Pirate name is required"
                         hasError = true
                     }
@@ -267,28 +279,110 @@ fun LoginScreen(
                         emailError = "Valid crew email is required"
                         hasError = true
                     }
-                    if (password.length < 4) {
-                        passwordError = "Password must be at least 4 characters"
+                    if (password.length < 6) {
+                        passwordError = "Password must be at least 6 characters"
                         hasError = true
                     }
 
-                    if (!hasError) {
-                        onLoginSuccess(name, email, selectedAvatar)
+                    if (!hasError && !isLoading) {
+                        isLoading = true
+                        coroutineScope.launch {
+                            try {
+                                if (isSignUpMode) {
+                                    // 1. SIGN UP API
+                                    val response = SupabaseClient.api.signUp(
+                                        apiKey = SupabaseClient.API_KEY,
+                                        request = SupabaseSignUpRequest(
+                                            email = email,
+                                            password = password,
+                                            data = SupabaseUserMetadata(name, selectedAvatar)
+                                        )
+                                    )
+                                    
+                                    if (response.isSuccessful && response.body() != null) {
+                                        val body = response.body()!!
+                                        Toast.makeText(context, "Registration successful!", Toast.LENGTH_SHORT).show()
+                                        
+                                        // Auto login on successful signup
+                                        onLoginSuccess(
+                                            body.user.userMetadata?.name ?: name,
+                                            email,
+                                            body.user.userMetadata?.avatar ?: selectedAvatar,
+                                            body.accessToken
+                                        )
+                                    } else {
+                                        val errBody = response.errorBody()?.string() ?: "Unknown error"
+                                        Toast.makeText(context, "Sign up failed: $errBody", Toast.LENGTH_LONG).show()
+                                    }
+                                } else {
+                                    // 2. SIGN IN API
+                                    val response = SupabaseClient.api.signIn(
+                                        apiKey = SupabaseClient.API_KEY,
+                                        request = SupabaseSignInRequest(
+                                            email = email,
+                                            password = password
+                                        )
+                                    )
+
+                                    if (response.isSuccessful && response.body() != null) {
+                                        val body = response.body()!!
+                                        val metadataName = body.user.userMetadata?.name ?: "Pirate Crew"
+                                        val metadataAvatar = body.user.userMetadata?.avatar ?: "Luffy"
+                                        
+                                        Toast.makeText(context, "Welcome back, $metadataName!", Toast.LENGTH_SHORT).show()
+                                        onLoginSuccess(metadataName, email, metadataAvatar, body.accessToken)
+                                    } else {
+                                        val errBody = response.errorBody()?.string() ?: "Invalid credentials"
+                                        Toast.makeText(context, "Sign in failed: $errBody", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Connection error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                            } finally {
+                                isLoading = false
+                            }
+                        }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Secondary),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(56.dp),
+                enabled = !isLoading
             ) {
-                Text(
-                    text = "SET SAIL! ⚔️",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = OnSecondary
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(color = OnSecondary, modifier = Modifier.size(24.dp))
+                } else {
+                    Text(
+                        text = if (isSignUpMode) "JOIN THE CREW! ⛵" else "SET SAIL! ⚔️",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = OnSecondary
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Toggle mode link
+            Text(
+                text = if (isSignUpMode) "Already registered? Sign In" else "New to the crew? Join and Register!",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = Secondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .clickable { 
+                        if (!isLoading) {
+                            isSignUpMode = !isSignUpMode
+                            nameError = null
+                            emailError = null
+                            passwordError = null
+                        }
+                    }
+                    .padding(8.dp)
+            )
         }
     }
 }

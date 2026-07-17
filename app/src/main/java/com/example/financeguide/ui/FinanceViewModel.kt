@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+import com.example.financeguide.data.remote.*
+
 class FinanceViewModel(
     private val repository: FinanceRepository,
     private val getMonthlySummaryUseCase: GetMonthlySummaryUseCase,
@@ -45,6 +47,63 @@ class FinanceViewModel(
                 loadDashboardData()
             }
         }
+        viewModelScope.launch {
+            settingsManager.isLoggedIn.collect { loggedIn ->
+                if (loggedIn) {
+                    syncFromRemote()
+                } else {
+                    repository.clearAllData()
+                    loadDashboardData()
+                }
+            }
+        }
+    }
+
+    fun syncFromRemote() {
+        val token = settingsManager.accessToken.value
+        if (token.isEmpty()) return
+        
+        viewModelScope.launch {
+            try {
+                repository.clearAllData()
+
+                // Fetch remote transactions
+                val txResponse = SupabaseClient.api.getTransactions(SupabaseClient.API_KEY, "Bearer $token")
+                if (txResponse.isSuccessful && txResponse.body() != null) {
+                    txResponse.body()!!.forEach { remote ->
+                        repository.insertTransaction(
+                            TransactionEntity(
+                                amount = remote.amount,
+                                title = remote.title,
+                                category = remote.category,
+                                type = remote.type,
+                                date = remote.date,
+                                note = remote.note,
+                                isRecurring = remote.isRecurring
+                            )
+                        )
+                    }
+                }
+
+                // Fetch remote budgets
+                val budgetResponse = SupabaseClient.api.getBudgets(SupabaseClient.API_KEY, "Bearer $token")
+                if (budgetResponse.isSuccessful && budgetResponse.body() != null) {
+                    budgetResponse.body()!!.forEach { remote ->
+                        repository.insertBudget(
+                            BudgetEntity(
+                                category = remote.category,
+                                monthYear = remote.monthYear,
+                                limitAmount = remote.limitAmount
+                            )
+                        )
+                    }
+                }
+                
+                loadDashboardData()
+            } catch (e: Exception) {
+                // Connection offline
+            }
+        }
     }
 
     fun loadDashboardData() {
@@ -62,6 +121,27 @@ class FinanceViewModel(
         viewModelScope.launch {
             repository.insertTransaction(transaction)
             loadDashboardData() // Refresh dashboard data
+
+            val token = settingsManager.accessToken.value
+            if (token.isNotEmpty()) {
+                try {
+                    SupabaseClient.api.insertTransaction(
+                        apiKey = SupabaseClient.API_KEY,
+                        token = "Bearer $token",
+                        transaction = SupabaseTransaction(
+                            amount = transaction.amount,
+                            title = transaction.title,
+                            category = transaction.category,
+                            type = transaction.type,
+                            date = transaction.date,
+                            note = transaction.note,
+                            isRecurring = transaction.isRecurring
+                        )
+                    )
+                } catch (e: Exception) {
+                    // Ignore offline sync errors
+                }
+            }
         }
     }
 
@@ -69,6 +149,23 @@ class FinanceViewModel(
         viewModelScope.launch {
             repository.insertBudget(budget)
             loadDashboardData()
+
+            val token = settingsManager.accessToken.value
+            if (token.isNotEmpty()) {
+                try {
+                    SupabaseClient.api.insertBudget(
+                        apiKey = SupabaseClient.API_KEY,
+                        token = "Bearer $token",
+                        budget = SupabaseBudget(
+                            category = budget.category,
+                            monthYear = budget.monthYear,
+                            limitAmount = budget.limitAmount
+                        )
+                    )
+                } catch (e: Exception) {
+                    // Ignore offline sync errors
+                }
+            }
         }
     }
 
@@ -83,6 +180,19 @@ class FinanceViewModel(
         viewModelScope.launch {
             repository.deleteTransaction(transaction)
             loadDashboardData()
+
+            val token = settingsManager.accessToken.value
+            if (token.isNotEmpty()) {
+                try {
+                    SupabaseClient.api.deleteTransaction(
+                        apiKey = SupabaseClient.API_KEY,
+                        token = "Bearer $token",
+                        filter = "date=eq.${transaction.date}"
+                    )
+                } catch (e: Exception) {
+                    // Ignore offline sync errors
+                }
+            }
         }
     }
 
@@ -90,6 +200,19 @@ class FinanceViewModel(
         viewModelScope.launch {
             repository.deleteBudget(budget)
             loadDashboardData()
+
+            val token = settingsManager.accessToken.value
+            if (token.isNotEmpty()) {
+                try {
+                    SupabaseClient.api.deleteBudget(
+                        apiKey = SupabaseClient.API_KEY,
+                        token = "Bearer $token",
+                        filter = "and(category.eq.${budget.category},month_year.eq.${budget.monthYear})"
+                    )
+                } catch (e: Exception) {
+                    // Ignore offline sync errors
+                }
+            }
         }
     }
 }

@@ -29,6 +29,9 @@ class SettingsManager(context: Context) {
     private val _userAvatar = MutableStateFlow(getUserAvatarPreference())
     val userAvatar: StateFlow<String> = _userAvatar
 
+    private val _accessToken = MutableStateFlow(getAccessTokenPreference())
+    val accessToken: StateFlow<String> = _accessToken
+
     fun setTheme(themeVal: String) {
         prefs.edit().putString("theme", themeVal).apply()
         _theme.value = themeVal
@@ -44,24 +47,28 @@ class SettingsManager(context: Context) {
         _onboardingCompleted.value = completed
     }
 
-    fun saveUserLogin(name: String, email: String, avatar: String) {
+    fun saveUserLogin(name: String, email: String, avatar: String, token: String) {
         prefs.edit()
             .putBoolean("is_logged_in", true)
             .putString("user_name", name)
             .putString("user_email", email)
             .putString("user_avatar", avatar)
+            .putString("access_token", token)
             .apply()
         _isLoggedIn.value = true
         _userName.value = name
         _userEmail.value = email
         _userAvatar.value = avatar
+        _accessToken.value = token
     }
 
     fun logout() {
         prefs.edit()
             .putBoolean("is_logged_in", false)
+            .putString("access_token", "")
             .apply()
         _isLoggedIn.value = false
+        _accessToken.value = ""
     }
 
     fun updateProfile(name: String, email: String, avatar: String) {
@@ -101,5 +108,9 @@ class SettingsManager(context: Context) {
 
     private fun getUserAvatarPreference(): String {
         return prefs.getString("user_avatar", "Luffy") ?: "Luffy"
+    }
+
+    private fun getAccessTokenPreference(): String {
+        return prefs.getString("access_token", "") ?: ""
     }
 }

@@ -67,4 +67,9 @@ class FinanceRepository(
 
     suspend fun deleteBudgetById(id: Long) =
         budgetDao.deleteById(id)
+
+    suspend fun clearAllData() {
+        transactionDao.clearAllTransactions()
+        budgetDao.clearAllBudgets()
+    }
 }
