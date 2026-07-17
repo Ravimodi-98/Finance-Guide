@@ -388,6 +388,31 @@ fun LoginScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Fallback Offline Mode Button
+            OutlinedButton(
+                onClick = {
+                    val guestName = if (name.isBlank()) "Guest Pirate" else name
+                    val guestEmail = if (email.isBlank()) "guest@strawhats.org" else email
+                    Toast.makeText(context, "Embarking in Offline Mode! ⚓", Toast.LENGTH_SHORT).show()
+                    onLoginSuccess(guestName, guestEmail, selectedAvatar, "") // Empty token bypasses Supabase sync
+                },
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                enabled = !isLoading
+            ) {
+                Text(
+                    text = "EMBARK OFFLINE ⚓",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // Toggle mode link
