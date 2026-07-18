@@ -105,7 +105,7 @@ class MainActivity : ComponentActivity() {
                 showSplash = false
             }
 
-            FinanceGuideTheme(darkTheme = darkTheme) {
+            FinanceGuideTheme(themeMode = themeMode) {
                 CompositionLocalProvider(LocalCurrency provides currencyCode) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         if (showSplash) {

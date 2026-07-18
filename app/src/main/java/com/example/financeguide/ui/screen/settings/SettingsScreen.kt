@@ -76,8 +76,10 @@ fun SettingsScreen(
     val userAvatar by settingsManager.userAvatar.collectAsState()
 
     val currentThemeName = when (themeMode) {
-        "dark" -> "Dark Mode (Jolly Roger Style)"
-        "light" -> "Light Mode (Marine Base Style)"
+        "onepiece" -> "One Piece Theme"
+        "spiderman" -> "Spider-Man Theme"
+        "dark" -> "One Piece Theme"
+        "light" -> "Spider-Man Theme"
         else -> "System Default"
     }
 
@@ -262,13 +264,13 @@ fun SettingsScreen(
             text = {
                 Column {
                     TextButton(onClick = { 
-                        settingsManager.setTheme("light")
+                        settingsManager.setTheme("onepiece")
                         showThemeDialog = false
-                    }) { Text("Light Mode") }
+                    }) { Text("One Piece Theme") }
                     TextButton(onClick = { 
-                        settingsManager.setTheme("dark")
+                        settingsManager.setTheme("spiderman")
                         showThemeDialog = false
-                    }) { Text("Dark Mode") }
+                    }) { Text("Spider-Man Theme") }
                     TextButton(onClick = { 
                         settingsManager.setTheme("system")
                         showThemeDialog = false

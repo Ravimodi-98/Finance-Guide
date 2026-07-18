@@ -54,6 +54,28 @@ val GradientStart = Color(0xFFD00000) // Luffy Red
 val GradientMiddle = Color(0xFFE85D04) // Shanks Orange
 val GradientEnd = Color(0xFFFFB703) // Straw Hat Gold
 
+// Spider-Man theme color palette
+val SpideyPrimary = Color(0xFFE50914) // Spidey Heroic Red
+val SpideyPrimaryLight = Color(0xFFFF5252)
+val SpideyPrimaryDark = Color(0xFFB30006)
+val SpideyOnPrimary = Color(0xFFFFFFFF)
+val SpideyPrimaryContainer = Color(0xFF2C1617)
+val SpideyOnPrimaryContainer = Color(0xFFFFC5C8)
+
+val SpideySecondary = Color(0xFF0056B3) // Web-Slinger Blue
+val SpideySecondaryLight = Color(0xFF4C94FF)
+val SpideySecondaryDark = Color(0xFF003D82)
+val SpideyOnSecondary = Color(0xFFFFFFFF)
+val SpideySecondaryContainer = Color(0xFF0F1E36)
+val SpideyOnSecondaryContainer = Color(0xFFD4E3FF)
+
+val SpideySurface = Color(0xFF060913) // Deep Queens/NYC Night Black
+val SpideySurfaceVariant = Color(0xFF0F1526) // City web dark slate
+val SpideySurfaceElevated = Color(0xFF1B243B)
+val SpideyOutline = Color(0xFF2E3B5C)
+val SpideyOnSurface = Color(0xFFF1F5F9)
+val SpideyOnSurfaceVariant = Color(0xFF94A3B8)
+
 val ChartColors = listOf(
     Color(0xFFD00000), // Luffy Red
     Color(0xFFFFB703), // Straw Hat Gold
@@ -65,3 +87,4 @@ val ChartColors = listOf(
     Color(0xFF00F5D4), // Franky Cyan
     Color(0xFF6B7280)
 )
+

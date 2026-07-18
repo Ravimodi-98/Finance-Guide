@@ -26,7 +26,7 @@ fun OnboardingScreen(
     onComplete: (currency: String, theme: String) -> Unit
 ) {
     var selectedCurrency by remember { mutableStateOf("BELI") }
-    var selectedTheme by remember { mutableStateOf("system") }
+    var selectedTheme by remember { mutableStateOf("onepiece") }
 
     val currencies = listOf(
         CurrencyOption("BELI", "฿", "Beli (One Piece)"),
@@ -36,9 +36,9 @@ fun OnboardingScreen(
     )
 
     val themes = listOf(
-        ThemeOption("system", "Default", "Marine System Default"),
-        ThemeOption("dark", "Dark Mode", "Jolly Roger Style"),
-        ThemeOption("light", "Light Mode", "Marine Base Style")
+        ThemeOption("system", "System Default", "Default Device Theme"),
+        ThemeOption("onepiece", "One Piece Theme", "Jolly Roger Style"),
+        ThemeOption("spiderman", "Spider-Man Theme", "Friendly Neighborhood Style")
     )
 
     Box(

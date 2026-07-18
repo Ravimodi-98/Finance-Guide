@@ -67,19 +67,54 @@ private val LightColorScheme = lightColorScheme(
     outline = OutlineLight
 )
 
+private val OnePieceColorScheme = DarkColorScheme
+
+private val SpidermanColorScheme = darkColorScheme(
+    primary = SpideyPrimary,
+    onPrimary = SpideyOnPrimary,
+    primaryContainer = SpideyPrimaryContainer,
+    onPrimaryContainer = SpideyOnPrimaryContainer,
+    secondary = SpideySecondary,
+    onSecondary = SpideyOnSecondary,
+    secondaryContainer = SpideySecondaryContainer,
+    onSecondaryContainer = SpideyOnSecondaryContainer,
+    tertiary = SpideySecondary,
+    onTertiary = SpideyOnSecondary,
+    tertiaryContainer = SpideySecondaryContainer,
+    onTertiaryContainer = SpideyOnSecondaryContainer,
+    error = Error,
+    onError = OnError,
+    errorContainer = ErrorContainer,
+    onErrorContainer = OnErrorContainer,
+    background = SpideySurface,
+    onBackground = SpideyOnSurface,
+    surface = SpideySurface,
+    onSurface = SpideyOnSurface,
+    surfaceVariant = SpideySurfaceVariant,
+    onSurfaceVariant = SpideyOnSurfaceVariant,
+    outline = SpideyOutline,
+    surfaceContainerLowest = SpideySurface,
+    surfaceContainerLow = SpideySurfaceVariant,
+    surfaceContainer = SpideySurfaceVariant,
+    surfaceContainerHigh = SpideySurfaceElevated,
+    surfaceContainerHighest = SpideySurfaceElevated
+)
+
 @Composable
 fun FinanceGuideTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: String = "system",
     dynamicColor: Boolean = false, // Use our premium palette by default
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    val systemDark = isSystemInDarkTheme()
+    val colorScheme = when (themeMode) {
+        "onepiece" -> OnePieceColorScheme
+        "spiderman" -> SpidermanColorScheme
+        "dark" -> OnePieceColorScheme
+        "light" -> LightColorScheme
+        else -> {
+            if (systemDark) OnePieceColorScheme else LightColorScheme
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
     }
 
     MaterialTheme(
