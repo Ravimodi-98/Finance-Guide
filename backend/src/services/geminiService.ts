@@ -134,7 +134,7 @@ class GeminiService {
       logger.info(`Sending request to Gemini for prompt: "${message.substring(0, 50)}..."`);
       
       const model = this.genAI.getGenerativeModel({
-        model: 'gemini-flash-latest',
+        model: 'gemini-3.1-flash-lite',
         systemInstruction: SYSTEM_PROMPT,
       });
 
