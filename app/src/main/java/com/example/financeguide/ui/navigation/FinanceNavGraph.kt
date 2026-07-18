@@ -37,22 +37,24 @@ fun FinanceNavGraph(
 
     Scaffold(
         bottomBar = {
-            BottomNavBar(
-                currentDestination = currentDestination,
-                onNavigateToDestination = { destination ->
-                    if (destination == TopLevelDestination.ADD_TRANSACTION) {
-                        navController.navigate(destination.route)
-                        return@BottomNavBar
-                    }
-                    navController.navigate(destination.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+            if (currentRoute != "finance_ai") {
+                BottomNavBar(
+                    currentDestination = currentDestination,
+                    onNavigateToDestination = { destination ->
+                        if (destination == TopLevelDestination.ADD_TRANSACTION) {
+                            navController.navigate(destination.route)
+                            return@BottomNavBar
                         }
-                        launchSingleTop = true
-                        restoreState = true
+                        navController.navigate(destination.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { innerPadding ->
         NavHost(
