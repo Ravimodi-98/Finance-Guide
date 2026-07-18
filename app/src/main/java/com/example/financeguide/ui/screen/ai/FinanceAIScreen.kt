@@ -66,9 +66,14 @@ fun FinanceAIScreen(
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
 
-    // Auto-scroll to the bottom when new messages arrive
-    LaunchedEffect(uiState.messages.size, uiState.isLoading) {
+    val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+
+    // Auto-scroll to the bottom when new messages arrive or keyboard is opened (WhatsApp style)
+    LaunchedEffect(uiState.messages.size, uiState.isLoading, isKeyboardOpen) {
         if (uiState.messages.isNotEmpty()) {
+            if (isKeyboardOpen) {
+                kotlinx.coroutines.delay(150)
+            }
             listState.animateScrollToItem(uiState.messages.size)
         }
     }
@@ -182,7 +187,7 @@ fun FinanceAIScreen(
                 }
             }
 
-            val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+
 
             // Message List
             Box(
