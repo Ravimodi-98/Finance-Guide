@@ -84,18 +84,18 @@ fun FinanceAIScreen(
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        NavigatorAvatar(modifier = Modifier.size(36.dp))
+                        NavigatorAvatar(modifier = Modifier.size(38.dp))
                         Column {
                             Text(
-                                text = "Finance Navigator",
-                                color = Secondary,
+                                text = "Nami (Navigator)",
+                                color = Color.White,
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
                             Text(
-                                text = if (uiState.isLoading) "Mapping stars..." else "Online",
-                                color = if (uiState.isLoading) SecondaryLight else Color.Green.copy(alpha = 0.8f),
+                                text = if (uiState.isLoading) "typing..." else "online",
+                                color = if (uiState.isLoading) Color(0xFF00A884) else Color.White.copy(alpha = 0.6f),
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
                             )
                         }
@@ -111,38 +111,44 @@ fun FinanceAIScreen(
                     }
                 },
                 actions = {
-                    if (uiState.messages.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.clearChat() }) {
-                            Icon(
-                                imageVector = Icons.Rounded.DeleteSweep,
-                                contentDescription = "Clear Chat",
-                                tint = OnSurfaceDarkVariant
-                            )
-                        }
+                    IconButton(onClick = {}) {
+                        Icon(
+                            imageVector = Icons.Rounded.Videocam,
+                            contentDescription = "Video Call",
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    IconButton(onClick = {}) {
+                        Icon(
+                            imageVector = Icons.Rounded.Call,
+                            contentDescription = "Call",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    IconButton(onClick = { viewModel.clearChat() }) {
+                        Icon(
+                            imageVector = Icons.Rounded.MoreVert,
+                            contentDescription = "Menu / Clear Chat",
+                            tint = Color.White
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = SurfaceDark,
+                    containerColor = Color(0xFF1F2C34),
                     titleContentColor = Color.White
                 )
             )
         },
-        containerColor = SurfaceDark
+        containerColor = Color(0xFF0B141A)
     ) { innerPadding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .imePadding()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            SurfaceDark,
-                            SurfaceDarkVariant,
-                            SurfaceDark
-                        )
-                    )
-                )
+                .background(Color(0xFF0B141A))
         ) {
             // Error banner
             AnimatedVisibility(
@@ -290,69 +296,84 @@ fun FinanceAIScreen(
 
             // Input Row
             Surface(
-                color = SurfaceDarkVariant,
+                color = Color(0xFF1F2C34), // WhatsApp dark bottom bar color
                 tonalElevation = 8.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                        .navigationBarsPadding()
-                        .imePadding(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                        .navigationBarsPadding(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    OutlinedTextField(
-                        value = inputText,
-                        onValueChange = { inputText = it },
-                        placeholder = {
-                            Text(
-                                "Ask the Navigator...",
-                                color = OnSurfaceDarkVariant.copy(alpha = 0.7f)
-                            )
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedBorderColor = Secondary,
-                            unfocusedBorderColor = OutlineDark,
-                            focusedContainerColor = SurfaceDark,
-                            unfocusedContainerColor = SurfaceDark
-                        ),
-                        modifier = Modifier.weight(1f),
+                    // WhatsApp Styled Input Capsule
+                    Surface(
                         shape = RoundedCornerShape(24.dp),
-                        maxLines = 4,
-                        keyboardOptions = KeyboardOptions(
-                            imeAction = ImeAction.Send
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onSend = {
-                                if (inputText.isNotBlank() && !uiState.isLoading) {
-                                    viewModel.sendMessage(inputText)
-                                    inputText = ""
-                                    keyboardController?.hide()
-                                }
+                        color = Color(0xFF2A3942), // WhatsApp dark input box color
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            IconButton(onClick = {}) {
+                                Icon(
+                                    imageVector = Icons.Rounded.SentimentSatisfiedAlt,
+                                    contentDescription = "Emojis",
+                                    tint = Color.White.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(22.dp)
+                                )
                             }
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    val sendBtnScale = if (inputText.isNotBlank()) 1.1f else 1.0f
-                    val infiniteTransition = rememberInfiniteTransition(label = "SendAnim")
-                    val pulseScale by if (inputText.isNotBlank()) {
-                        infiniteTransition.animateFloat(
-                            initialValue = 1.0f,
-                            targetValue = 1.1f,
-                            animationSpec = infiniteRepeatable(
-                                animation = tween(1000, easing = FastOutSlowInEasing),
-                                repeatMode = RepeatMode.Reverse
-                            ),
-                            label = "Pulse"
-                        )
-                    } else {
-                        remember { mutableStateOf(1.0f) }
+                            
+                            TextField(
+                                value = inputText,
+                                onValueChange = { inputText = it },
+                                placeholder = {
+                                    Text(
+                                        text = "Message",
+                                        color = Color.White.copy(alpha = 0.4f),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White
+                                ),
+                                keyboardOptions = KeyboardOptions(
+                                    imeAction = ImeAction.Send
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onSend = {
+                                        if (inputText.isNotBlank() && !uiState.isLoading) {
+                                            viewModel.sendMessage(inputText)
+                                            inputText = ""
+                                            keyboardController?.hide()
+                                        }
+                                    }
+                                ),
+                                modifier = Modifier.weight(1f),
+                                maxLines = 4
+                            )
+                            
+                            IconButton(onClick = {}) {
+                                Icon(
+                                    imageVector = Icons.Rounded.AttachFile,
+                                    contentDescription = "Attach File",
+                                    tint = Color.White.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
                     }
 
+                    // Circular send button
                     FloatingActionButton(
                         onClick = {
                             if (inputText.isNotBlank() && !uiState.isLoading) {
@@ -361,18 +382,16 @@ fun FinanceAIScreen(
                                 keyboardController?.hide()
                             }
                         },
-                        containerColor = if (inputText.isNotBlank()) Primary else SurfaceDarkElevated,
+                        containerColor = Color(0xFF00A884), // WhatsApp Green
                         contentColor = Color.White,
                         shape = CircleShape,
                         elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 2.dp),
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clickable(enabled = inputText.isNotBlank() && !uiState.isLoading) {}
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.Send,
+                            imageVector = if (inputText.isNotBlank()) Icons.AutoMirrored.Rounded.Send else Icons.Rounded.Mic,
                             contentDescription = "Send",
-                            tint = if (inputText.isNotBlank()) Color.White else OnSurfaceDarkVariant,
+                            tint = Color.White,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -391,14 +410,17 @@ fun ChatBubble(
     isLast: Boolean
 ) {
     val bubbleShape = if (message.isFromUser) {
-        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 2.dp)
+        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 12.dp, bottomEnd = 2.dp)
     } else {
-        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 2.dp, bottomEnd = 16.dp)
+        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 2.dp, bottomEnd = 12.dp)
     }
 
     val alignment = if (message.isFromUser) Alignment.CenterEnd else Alignment.CenterStart
-    val containerColor = if (message.isFromUser) PrimaryContainer else SurfaceDarkElevated
-    val borderColor = if (message.isFromUser) Primary.copy(alpha = 0.5f) else Tertiary.copy(alpha = 0.4f)
+    val containerColor = if (message.isFromUser) Color(0xFF005C4B) else Color(0xFF202C33) // WhatsApp sent vs received bubble colors
+
+    val timeText = remember(message.timestamp) {
+        java.text.SimpleDateFormat("h:mm a", java.util.Locale.US).format(java.util.Date(message.timestamp))
+    }
 
     Box(
         modifier = Modifier.fillMaxWidth(),
@@ -410,55 +432,9 @@ fun ChatBubble(
         ) {
             Surface(
                 shape = bubbleShape,
-                color = containerColor,
-                border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
+                color = containerColor
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    if (message.isFromUser) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.padding(bottom = 6.dp)
-                        ) {
-                            Text(
-                                text = "LOGBOOK ENTRY",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 9.sp
-                                ),
-                                color = PrimaryLight.copy(alpha = 0.8f),
-                                letterSpacing = 1.sp
-                            )
-                            Icon(
-                                imageVector = Icons.Rounded.Anchor,
-                                contentDescription = null,
-                                tint = PrimaryLight,
-                                modifier = Modifier.size(11.dp)
-                            )
-                        }
-                    } else {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.padding(bottom = 6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Explore,
-                                contentDescription = null,
-                                tint = Secondary,
-                                modifier = Modifier.size(11.dp)
-                            )
-                            Text(
-                                text = "NAVIGATOR LOG",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 9.sp
-                                ),
-                                color = SecondaryLight.copy(alpha = 0.8f),
-                                letterSpacing = 1.sp
-                            )
-                        }
-                    }
+                Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                     Text(
                         text = parseMarkdown(message.text),
                         color = Color.White,
@@ -467,10 +443,39 @@ fun ChatBubble(
                             letterSpacing = 0.3.sp
                         )
                     )
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                    // Actions bar inside bubble for AI messages, or below
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text(
+                            text = timeText,
+                            color = Color.White.copy(alpha = 0.5f),
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp)
+                        )
+                        if (message.isFromUser) {
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Icon(
+                                imageVector = Icons.Rounded.DoneAll,
+                                contentDescription = "Read",
+                                tint = Color(0xFF53BDEB), // WhatsApp double blue checkmark color
+                                modifier = Modifier.size(13.dp)
+                            )
+                        }
+                    }
+
+                    // Action buttons (Copy/Share) inside Nami's message bubble
                     if (!message.isFromUser) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .height(0.5.dp)
+                                .background(Color.White.copy(alpha = 0.08f))
+                        )
                         Row(
                             horizontalArrangement = Arrangement.End,
                             verticalAlignment = Alignment.CenterVertically,
@@ -478,38 +483,38 @@ fun ChatBubble(
                         ) {
                             IconButton(
                                 onClick = onCopy,
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(24.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.ContentCopy,
                                     contentDescription = "Copy",
-                                    tint = OnSurfaceDarkVariant.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(14.dp)
+                                    tint = Color.White.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(13.dp)
                                 )
                             }
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             IconButton(
                                 onClick = onShare,
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(24.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Share,
                                     contentDescription = "Share",
-                                    tint = OnSurfaceDarkVariant.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(14.dp)
+                                    tint = Color.White.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(13.dp)
                                 )
                             }
                             if (isLast) {
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
                                 IconButton(
                                     onClick = onRegenerate,
-                                    modifier = Modifier.size(28.dp)
+                                    modifier = Modifier.size(24.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.Refresh,
                                         contentDescription = "Regenerate",
-                                        tint = OnSurfaceDarkVariant.copy(alpha = 0.7f),
-                                        modifier = Modifier.size(14.dp)
+                                        tint = Color.White.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(13.dp)
                                     )
                                 }
                             }
@@ -601,9 +606,8 @@ fun TypingIndicatorRow() {
         NavigatorAvatar(modifier = Modifier.size(28.dp))
         Spacer(modifier = Modifier.width(8.dp))
         Surface(
-            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 2.dp, bottomEnd = 16.dp),
-            color = SurfaceDarkElevated,
-            border = androidx.compose.foundation.BorderStroke(1.dp, Tertiary.copy(alpha = 0.2f))
+            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 2.dp, bottomEnd = 12.dp),
+            color = Color(0xFF202C33)
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
