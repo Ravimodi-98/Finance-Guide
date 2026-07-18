@@ -147,7 +147,6 @@ fun FinanceAIScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .imePadding()
                 .background(Color(0xFF0B141A))
         ) {
             // Error banner
