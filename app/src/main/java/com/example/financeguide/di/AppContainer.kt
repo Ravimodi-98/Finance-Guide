@@ -8,6 +8,18 @@ import com.example.financeguide.domain.usecase.GetBudgetStatusUseCase
 import com.example.financeguide.domain.usecase.GetMonthlySummaryUseCase
 import com.example.financeguide.ui.FinanceViewModelFactory
 
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import com.example.financeguide.data.remote.FinanceApiService
+import com.example.financeguide.data.repository.FinanceAIRepositoryImpl
+import com.example.financeguide.domain.repository.FinanceAIRepository
+import com.example.financeguide.domain.usecase.AskFinanceQuestionUseCase
+import com.example.financeguide.ui.screen.ai.FinanceAIViewModelFactory
+import java.util.concurrent.TimeUnit
+
+
 /**
  * Manual Dependency Injection container for the MVP.
  */
@@ -40,12 +52,58 @@ class AppContainer(private val context: Context) {
         com.example.financeguide.data.local.SettingsManager(context)
     }
 
+    // --- Gemini AI Remote Network Container ---
+
+    private val okHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .build()
+    }
+
+    private val aiRetrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            // Default address. Set to http://127.0.0.1:3000/ for physical phone USB debugging (via adb reverse)
+            // Or set to http://10.0.2.2:3000/ for Android emulator local loopback
+            .baseUrl("https://backend-blond-eight-79.vercel.app/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    val financeApiService: FinanceApiService by lazy {
+        aiRetrofit.create(FinanceApiService::class.java)
+    }
+
+    val financeAIRepository: FinanceAIRepository by lazy {
+        FinanceAIRepositoryImpl(financeApiService)
+    }
+
+    val askFinanceQuestionUseCase: AskFinanceQuestionUseCase by lazy {
+        AskFinanceQuestionUseCase(financeAIRepository)
+    }
+
+    // --- Factories ---
+
     val financeViewModelFactory: FinanceViewModelFactory by lazy {
         FinanceViewModelFactory(
             repository = financeRepository,
             getMonthlySummaryUseCase = getMonthlySummaryUseCase,
             getBudgetStatusUseCase = getBudgetStatusUseCase,
             generateSuggestionsUseCase = generateSuggestionsUseCase,
+            settingsManager = settingsManager
+        )
+    }
+
+    val financeAIViewModelFactory: FinanceAIViewModelFactory by lazy {
+        FinanceAIViewModelFactory(
+            askFinanceQuestionUseCase = askFinanceQuestionUseCase,
+            localRepository = financeRepository,
             settingsManager = settingsManager
         )
     }

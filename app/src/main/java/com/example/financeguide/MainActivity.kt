@@ -197,7 +197,7 @@ class MainActivity : ComponentActivity() {
                         } else {
                             FinanceNavGraph(
                                 viewModel = viewModel(factory = appContainer.financeViewModelFactory),
-                                settingsManager = appContainer.settingsManager
+                                appContainer = appContainer
                             )
                         }
                     }

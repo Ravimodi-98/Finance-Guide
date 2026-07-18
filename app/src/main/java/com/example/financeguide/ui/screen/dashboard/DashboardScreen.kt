@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
@@ -20,6 +21,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Explore
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,6 +47,7 @@ fun DashboardScreen(
     viewModel: FinanceViewModel,
     onAddIncome: () -> Unit = {},
     onAddExpense: () -> Unit = {},
+    onNavigateToAI: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val summary by viewModel.summary.collectAsStateWithLifecycle()
@@ -68,11 +75,28 @@ fun DashboardScreen(
         item {
             Box(modifier = Modifier.animateEnter(animIndex++)) {
                 Column {
-                    Text(
-                        text = "Bounty Board",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Bounty Board",
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                        IconButton(
+                            onClick = onNavigateToAI
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Explore,
+                                contentDescription = "Finance Navigator",
+                                tint = com.example.financeguide.theme.Secondary,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                    }
                     BalanceCard(
                         balance = summary.balance,
                         income = summary.totalIncome,

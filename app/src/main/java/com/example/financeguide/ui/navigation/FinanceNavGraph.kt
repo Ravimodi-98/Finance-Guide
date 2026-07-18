@@ -19,11 +19,14 @@ import com.example.financeguide.ui.screen.dashboard.DashboardScreen
 import com.example.financeguide.ui.screen.insights.InsightsScreen
 import com.example.financeguide.ui.screen.settings.SettingsScreen
 import com.example.financeguide.ui.screen.transaction.AddTransactionScreen
+import com.example.financeguide.ui.screen.ai.FinanceAIScreen
+import com.example.financeguide.ui.screen.ai.FinanceAIViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun FinanceNavGraph(
     viewModel: FinanceViewModel,
-    settingsManager: com.example.financeguide.data.local.SettingsManager
+    appContainer: com.example.financeguide.di.AppContainer
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -65,6 +68,9 @@ fun FinanceNavGraph(
                     },
                     onAddExpense = {
                         navController.navigate("add_transaction/EXPENSE")
+                    },
+                    onNavigateToAI = {
+                        navController.navigate("finance_ai")
                     }
                 )
             }
@@ -98,7 +104,16 @@ fun FinanceNavGraph(
                 InsightsScreen(viewModel = viewModel)
             }
             composable(TopLevelDestination.SETTINGS.route) {
-                SettingsScreen(settingsManager = settingsManager)
+                SettingsScreen(settingsManager = appContainer.settingsManager)
+            }
+            composable("finance_ai") {
+                val aiViewModel: FinanceAIViewModel = viewModel(
+                    factory = appContainer.financeAIViewModelFactory
+                )
+                FinanceAIScreen(
+                    viewModel = aiViewModel,
+                    onBack = { navController.navigateUp() }
+                )
             }
         }
     }
