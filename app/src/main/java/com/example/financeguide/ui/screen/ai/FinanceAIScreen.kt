@@ -35,6 +35,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -125,6 +128,7 @@ fun FinanceAIScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .imePadding()
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
@@ -178,6 +182,8 @@ fun FinanceAIScreen(
                 }
             }
 
+            val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+
             // Message List
             Box(
                 modifier = Modifier
@@ -194,29 +200,34 @@ fun FinanceAIScreen(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        NavigatorAvatar(modifier = Modifier.size(100.dp))
-                        Spacer(modifier = Modifier.height(24.dp))
+                        NavigatorAvatar(modifier = Modifier.size(if (isKeyboardOpen) 60.dp else 120.dp))
+                        Spacer(modifier = Modifier.height(if (isKeyboardOpen) 8.dp else 24.dp))
                         Text(
                             text = "Ahoy, Sailor!",
-                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = if (isKeyboardOpen) 20.sp else 28.sp
+                            ),
                             color = Secondary,
                             textAlign = TextAlign.Center
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "I am Nami, your Finance Navigator. Let's make sure our ship's ledger is in order! Ask me questions about saving money, budget limits, emergency funds, or expense logs.",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = OnSurfaceDarkVariant,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 22.sp
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "⚠️ \"Every Pirate King starts by protecting their treasure!\"",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                            color = SecondaryLight,
-                            textAlign = TextAlign.Center
-                        )
+                        if (!isKeyboardOpen) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "I am Nami, your Finance Navigator. Let's make sure our ship's ledger is in order! Ask me questions about saving money, budget limits, emergency funds, or expense logs.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = OnSurfaceDarkVariant,
+                                textAlign = TextAlign.Center,
+                                lineHeight = 22.sp
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "⚠️ \"Every Pirate King starts by protecting their treasure!\"",
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                color = SecondaryLight,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 } else {
                     LazyColumn(
