@@ -41,6 +41,7 @@ import com.example.financeguide.ui.components.BalanceCard
 import com.example.financeguide.ui.components.SuggestionCard
 import com.example.financeguide.ui.components.TransactionItem
 import com.example.financeguide.ui.components.animateEnter
+import com.example.financeguide.theme.LocalThemeStrings
 
 @Composable
 fun DashboardScreen(
@@ -53,6 +54,7 @@ fun DashboardScreen(
     val summary by viewModel.summary.collectAsStateWithLifecycle()
     val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
     val recentTransactions by viewModel.recentTransactions.collectAsStateWithLifecycle()
+    val strings = LocalThemeStrings.current
     // Edit dialog state
     var showEditDialog by remember { mutableStateOf(false) }
     var selectedTransaction by remember { mutableStateOf<com.example.financeguide.data.local.entity.TransactionEntity?>(null) }
@@ -83,7 +85,7 @@ fun DashboardScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Bounty Board",
+                            text = strings.dashboardTitle,
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         IconButton(
@@ -113,7 +115,7 @@ fun DashboardScreen(
                 Box(modifier = Modifier.animateEnter(animIndex++)) {
                     Column {
                         Text(
-                            text = "Nami's Navigation Tip",
+                            text = strings.tipTitle,
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
@@ -125,7 +127,7 @@ fun DashboardScreen(
 
         item {
             Text(
-                text = "Logbook of Bounties",
+                text = strings.transactionListTitle,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(bottom = 8.dp).animateEnter(animIndex++)
             )

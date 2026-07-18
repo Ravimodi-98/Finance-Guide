@@ -6,7 +6,8 @@ import com.example.financeguide.data.remote.model.ChatResponseDto
 interface FinanceAIRepository {
     suspend fun askQuestion(
         message: String,
-        history: List<ChatMessageDto>
+        history: List<ChatMessageDto>,
+        theme: String
     ): Result<ChatResponseDto>
 
     suspend fun resetChat(): Result<Unit>

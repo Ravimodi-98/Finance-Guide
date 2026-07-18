@@ -9,8 +9,9 @@ class AskFinanceQuestionUseCase(
 ) {
     suspend operator fun invoke(
         message: String,
-        history: List<ChatMessageDto>
+        history: List<ChatMessageDto>,
+        theme: String = "onepiece"
     ): Result<ChatResponseDto> {
-        return repository.askQuestion(message, history)
+        return repository.askQuestion(message, history, theme)
     }
 }

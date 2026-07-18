@@ -3,12 +3,12 @@ import { geminiService } from '../services/geminiService';
 import { logger } from '../utils/logger';
 
 export const handleChat = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { message, history } = req.body;
+  const { message, history, theme = 'onepiece' } = req.body;
 
   let retries = 2;
   while (retries >= 0) {
     try {
-      const reply = await geminiService.generateResponse(message, history);
+      const reply = await geminiService.generateResponse(message, history, theme);
       res.status(200).json(reply);
       return;
     } catch (error: any) {

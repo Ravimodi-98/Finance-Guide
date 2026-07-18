@@ -17,6 +17,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -42,6 +43,24 @@ data class ChatUiState(
     )
 )
 
+private fun suggestionsForTheme(theme: String): List<String> = if (theme == "spiderman") {
+    listOf(
+        "I spent 500 Credits on mission gear",
+        "I earned 10000 Credits from a S.H.I.E.L.D. mission",
+        "Set budget of 3000 Credits for tech upgrades",
+        "Reduce unnecessary expenses",
+        "How much should I save every month?"
+    )
+} else {
+    listOf(
+        "I spent 500 Beli on food",
+        "I earned 10000 Beli from a treasure hunt",
+        "Set budget of 3000 Beli for entertainment",
+        "Reduce unnecessary expenses",
+        "How much should I save every month?"
+    )
+}
+
 class FinanceAIViewModel(
     private val askFinanceQuestionUseCase: AskFinanceQuestionUseCase,
     private val localRepository: FinanceRepository,
@@ -52,6 +71,15 @@ class FinanceAIViewModel(
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
     private var chatJob: Job? = null
+
+    init {
+        // Update suggested questions whenever theme changes
+        viewModelScope.launch {
+            settingsManager.theme.collectLatest { theme ->
+                _uiState.update { it.copy(suggestedQuestions = suggestionsForTheme(theme)) }
+            }
+        }
+    }
 
     fun sendMessage(messageText: String) {
         if (messageText.isBlank()) return
@@ -79,7 +107,7 @@ class FinanceAIViewModel(
                 )
             }
 
-            val result = askFinanceQuestionUseCase(messageText, historyDto)
+            val result = askFinanceQuestionUseCase(messageText, historyDto, settingsManager.theme.value)
             result.onSuccess { responseDto ->
                 // Process database commands returned by AI in the background
                 responseDto.commands?.forEach { cmd ->

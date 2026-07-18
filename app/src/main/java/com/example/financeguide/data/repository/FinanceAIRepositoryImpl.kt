@@ -15,10 +15,11 @@ class FinanceAIRepositoryImpl(
 
     override suspend fun askQuestion(
         message: String,
-        history: List<ChatMessageDto>
+        history: List<ChatMessageDto>,
+        theme: String
     ): Result<ChatResponseDto> {
         return try {
-            val response = apiService.chat(ChatRequestDto(message, history))
+            val response = apiService.chat(ChatRequestDto(message, history, theme))
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null) {

@@ -37,6 +37,7 @@ import com.example.financeguide.data.local.entity.BudgetEntity
 import com.example.financeguide.domain.model.Category
 import com.example.financeguide.ui.FinanceViewModel
 import com.example.financeguide.ui.components.BudgetProgressBar
+import com.example.financeguide.theme.LocalThemeStrings
 import java.util.Calendar
 
 import com.example.financeguide.ui.components.animateEnter
@@ -49,6 +50,7 @@ fun BudgetScreen(
     val budgetStatuses by viewModel.budgetStatuses.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
     var animIndex = 0
+    val strings = LocalThemeStrings.current
 
     Scaffold(
         modifier = modifier,
@@ -67,7 +69,7 @@ fun BudgetScreen(
         ) {
             item {
                 Text(
-                    text = "Bounty Limits (Budgets)",
+                    text = strings.budgetScreenTitle,
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                     modifier = Modifier.padding(bottom = 16.dp).animateEnter(animIndex++)
                 )
@@ -76,7 +78,7 @@ fun BudgetScreen(
             if (budgetStatuses.isEmpty()) {
                 item {
                     Text(
-                        text = "No bounty limits set yet. Add a bounty limit to start tracking your spending limits.",
+                        text = "No ${strings.budgetScreenTitle.lowercase()} set yet. Add a budget to start tracking your spending limits.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(vertical = 32.dp).animateEnter(animIndex++)
@@ -123,10 +125,11 @@ fun AddBudgetDialog(
 ) {
     var selectedCategory by remember { mutableStateOf(Category.FOOD) }
     var limit by remember { mutableStateOf("") }
+    val strings = LocalThemeStrings.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Bounty Limit") },
+        title = { Text(strings.addBudgetTitle) },
         text = {
             Column {
                 Text("Category", style = MaterialTheme.typography.labelLarge)

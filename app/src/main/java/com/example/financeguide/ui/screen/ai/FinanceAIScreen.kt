@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financeguide.theme.*
+import com.example.financeguide.theme.LocalThemeStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,6 +61,7 @@ fun FinanceAIScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var inputText by remember { mutableStateOf("") }
+    val strings = LocalThemeStrings.current
     
     val listState = rememberLazyListState()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -89,12 +91,12 @@ fun FinanceAIScreen(
                         NavigatorAvatar(modifier = Modifier.size(38.dp))
                         Column {
                             Text(
-                                text = "Nami (Navigator)",
+                                text = strings.chatbotTitle,
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
                             Text(
-                                text = if (uiState.isLoading) "typing..." else "online",
+                                text = if (uiState.isLoading) "typing..." else strings.chatbotStatusOnline,
                                 color = if (uiState.isLoading) Color(0xFF00A884) else Color.White.copy(alpha = 0.6f),
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
                             )
@@ -213,7 +215,7 @@ fun FinanceAIScreen(
                         NavigatorAvatar(modifier = Modifier.size(if (isKeyboardOpen) 60.dp else 120.dp))
                         Spacer(modifier = Modifier.height(if (isKeyboardOpen) 8.dp else 24.dp))
                         Text(
-                            text = "Ahoy, Sailor!",
+                            text = strings.chatbotWelcomeTitle,
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = if (isKeyboardOpen) 20.sp else 28.sp
@@ -224,7 +226,7 @@ fun FinanceAIScreen(
                         if (!isKeyboardOpen) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "I am Nami, your Finance Navigator. Let's make sure our ship's ledger is in order! Ask me questions about saving money, budget limits, emergency funds, or expense logs.",
+                                text = strings.chatbotWelcomeBody,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = OnSurfaceDarkVariant,
                                 textAlign = TextAlign.Center,
@@ -232,7 +234,7 @@ fun FinanceAIScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "⚠️ \"Every Pirate King starts by protecting their treasure!\"",
+                                text = strings.chatbotWelcomeQuote,
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                                 color = SecondaryLight,
                                 textAlign = TextAlign.Center
@@ -251,7 +253,7 @@ fun FinanceAIScreen(
                                 message = message,
                                 onCopy = {
                                     clipboardManager.setText(AnnotatedString(message.text))
-                                    Toast.makeText(context, "Logbook copied to clipboard!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, strings.copiedToast, Toast.LENGTH_SHORT).show()
                                 },
                                 onShare = {
                                     val sendIntent = Intent().apply {

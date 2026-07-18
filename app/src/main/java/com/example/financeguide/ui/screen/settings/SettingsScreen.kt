@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 
 
 import androidx.compose.material.icons.rounded.Payments
+import com.example.financeguide.theme.LocalThemeStrings
 
 @Composable
 fun SettingsScreen(
@@ -74,6 +75,7 @@ fun SettingsScreen(
     val userName by settingsManager.userName.collectAsState()
     val userEmail by settingsManager.userEmail.collectAsState()
     val userAvatar by settingsManager.userAvatar.collectAsState()
+    val strings = LocalThemeStrings.current
 
     val currentThemeName = when (themeMode) {
         "onepiece" -> "One Piece Theme"
@@ -208,7 +210,7 @@ fun SettingsScreen(
 
             SettingsClickableItem(
                 icon = Icons.Rounded.Payments,
-                title = "Bounty Currency",
+                title = strings.currencyLabel,
                 subtitle = currentCurrencyName,
                 onClick = { showCurrencyDialog = true }
             )

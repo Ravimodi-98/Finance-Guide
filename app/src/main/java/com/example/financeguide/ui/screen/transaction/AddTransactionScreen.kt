@@ -47,6 +47,7 @@ import com.example.financeguide.domain.model.Category
 import com.example.financeguide.domain.model.TransactionType
 import com.example.financeguide.theme.ExpenseRed
 import com.example.financeguide.theme.IncomeGreen
+import com.example.financeguide.theme.LocalThemeStrings
 import com.example.financeguide.ui.FinanceViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -61,11 +62,12 @@ fun AddTransactionScreen(
     var title by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(initialType) }
     var selectedCategory by remember { mutableStateOf(Category.OTHER) }
+    val strings = LocalThemeStrings.current
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Log New Bounty Entry") },
+                title = { Text(strings.addTransactionTitle) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Rounded.Close, contentDescription = "Close")
@@ -90,14 +92,14 @@ fun AddTransactionScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 TypeButton(
-                    text = "Bounty Loss",
+                    text = strings.lossLabel,
                     selected = selectedType == TransactionType.EXPENSE,
                     color = ExpenseRed,
                     onClick = { selectedType = TransactionType.EXPENSE },
                     modifier = Modifier.weight(1f)
                 )
                 TypeButton(
-                    text = "Bounty Gain",
+                    text = strings.gainLabel,
                     selected = selectedType == TransactionType.INCOME,
                     color = IncomeGreen,
                     onClick = { selectedType = TransactionType.INCOME },
@@ -177,7 +179,7 @@ fun AddTransactionScreen(
                 enabled = amount.isNotBlank() && title.isNotBlank()
             ) {
                 Text(
-                    text = "Log to Pirate Logbook",
+                    text = strings.saveButton,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
             }

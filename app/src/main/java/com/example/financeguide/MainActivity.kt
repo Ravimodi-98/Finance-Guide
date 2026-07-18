@@ -31,6 +31,9 @@ import com.example.financeguide.theme.FinanceGuideTheme
 import com.example.financeguide.theme.GradientStart
 import com.example.financeguide.theme.GradientMiddle
 import com.example.financeguide.theme.GradientEnd
+import com.example.financeguide.theme.LocalThemeStrings
+import com.example.financeguide.theme.OnePieceStrings
+import com.example.financeguide.theme.SpidermanStrings
 import com.example.financeguide.ui.navigation.FinanceNavGraph
 import com.example.financeguide.ui.FinanceViewModel
 import com.example.financeguide.ui.components.LocalCurrency
@@ -55,6 +58,8 @@ class MainActivity : ComponentActivity() {
                 "light" -> false
                 else -> isSystemInDarkTheme()
             }
+
+            val themeStrings = if (themeMode == "spiderman") SpidermanStrings else OnePieceStrings
 
             var showSplash by remember { mutableStateOf(true) }
 
@@ -106,7 +111,10 @@ class MainActivity : ComponentActivity() {
             }
 
             FinanceGuideTheme(themeMode = themeMode) {
-                CompositionLocalProvider(LocalCurrency provides currencyCode) {
+                CompositionLocalProvider(
+                    LocalCurrency provides currencyCode,
+                    LocalThemeStrings provides themeStrings
+                ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         if (showSplash) {
                             // Splash screen with premium animated background
