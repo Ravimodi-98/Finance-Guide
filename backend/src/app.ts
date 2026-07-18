@@ -9,6 +9,9 @@ import { logger } from './utils/logger';
 
 const app = express();
 
+// Trust proxy for Vercel deployment (express-rate-limit requirement)
+app.set('trust proxy', 1);
+
 // Security headers
 app.use(helmet());
 
