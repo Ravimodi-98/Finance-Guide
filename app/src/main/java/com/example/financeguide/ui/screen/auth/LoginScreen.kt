@@ -29,9 +29,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.financeguide.StrawHatIcon
 import com.example.financeguide.data.remote.*
 import com.example.financeguide.theme.*
+import com.example.financeguide.ui.components.ThemeAppLogo
 import kotlinx.coroutines.launch
 
 @Composable
@@ -40,6 +40,7 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val strings = LocalThemeStrings.current
 
     var isSignUpMode by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
@@ -47,20 +48,32 @@ fun LoginScreen(
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var selectedAvatar by remember { mutableStateOf("Luffy") }
+    var selectedAvatar by remember { mutableStateOf("Spidey") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     var nameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
-    val avatars = listOf(
-        AvatarOption("Luffy", "🍖", Primary),
-        AvatarOption("Zoro", "⚔️", IncomeGreen),
-        AvatarOption("Nami", "🍊", Secondary),
-        AvatarOption("Sanji", "🍳", Color(0xFF3B82F6)),
-        AvatarOption("Chopper", "🌸", Color(0xFFEC4899))
-    )
+    val isSpideyTheme = strings.chatbotName == "Spider-Man"
+
+    val avatars = if (isSpideyTheme) {
+        listOf(
+            AvatarOption("Spidey", "🕷️", SpideyPrimary),
+            AvatarOption("Miles", "⚡", Color(0xFFFF1744)),
+            AvatarOption("Gwen", "🕸️", Color(0xFFF48FB1)),
+            AvatarOption("Peter", "📷", SpideySecondary),
+            AvatarOption("MJ", "💖", Color(0xFFE91E63))
+        )
+    } else {
+        listOf(
+            AvatarOption("Luffy", "🍖", Primary),
+            AvatarOption("Zoro", "⚔️", IncomeGreen),
+            AvatarOption("Nami", "🍊", Secondary),
+            AvatarOption("Sanji", "🍳", Color(0xFF3B82F6)),
+            AvatarOption("Chopper", "🌸", Color(0xFFEC4899))
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -85,15 +98,16 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Custom Straw Hat Icon Logo
-            StrawHatIcon(
+            // Theme-aware Logo
+            ThemeAppLogo(
+                themeMode = if (isSpideyTheme) "spiderman" else "onepiece",
                 modifier = Modifier
                     .size(110.dp)
                     .padding(bottom = 8.dp)
             )
 
             Text(
-                text = if (isSignUpMode) "Join the Crew" else "Pirate Crew Sign In",
+                text = if (isSignUpMode) (if (isSpideyTheme) "Suit Up with Hero Account" else "Join the Crew") else strings.signIn,
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
@@ -102,8 +116,8 @@ fun LoginScreen(
 
             Text(
                 text = if (isSignUpMode) 
-                    "Create your pirate account and select your crew avatar to start." 
-                    else "Enter your credentials to manage your Beli and check bounty lists.",
+                    "Create your account and select your hero avatar to start." 
+                    else strings.signInSubtitle,
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.6f),
                 textAlign = TextAlign.Center,

@@ -30,10 +30,15 @@ class GetMonthlySummaryUseCase(
         val totalExpense = repository.getTotalExpense(startDate, endDate)
 
         val categoryBreakdown = mutableMapOf<Category, Double>()
+        val incomeCategoryBreakdown = mutableMapOf<Category, Double>()
         Category.entries.forEach { category ->
-            val amount = repository.getTotalExpenseByCategory(category.name, startDate, endDate)
-            if (amount > 0) {
-                categoryBreakdown[category] = amount
+            val expAmount = repository.getTotalExpenseByCategory(category.name, startDate, endDate)
+            if (expAmount > 0) {
+                categoryBreakdown[category] = expAmount
+            }
+            val incAmount = repository.getTotalIncomeByCategory(category.name, startDate, endDate)
+            if (incAmount > 0) {
+                incomeCategoryBreakdown[category] = incAmount
             }
         }
 
@@ -41,7 +46,8 @@ class GetMonthlySummaryUseCase(
             totalIncome = totalIncome,
             totalExpense = totalExpense,
             balance = totalIncome - totalExpense,
-            categoryBreakdown = categoryBreakdown
+            categoryBreakdown = categoryBreakdown,
+            incomeCategoryBreakdown = incomeCategoryBreakdown
         )
     }
 }

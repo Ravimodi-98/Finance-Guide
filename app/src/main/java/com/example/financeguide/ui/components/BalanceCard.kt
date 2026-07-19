@@ -38,13 +38,21 @@ fun BalanceCard(
     onExpenseClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val strings = com.example.financeguide.theme.LocalThemeStrings.current
+    val isSpidey = strings.chatbotName == "Spider-Man"
+    val gradientColors = if (isSpidey) {
+        listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
+    } else {
+        listOf(Color(0xFF1E88E5), Color(0xFFF6C445))
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .background(
                 brush = Brush.linearGradient(
-                    colors = listOf(GradientStart, GradientEnd)
+                    colors = gradientColors
                 )
             )
             .padding(24.dp)

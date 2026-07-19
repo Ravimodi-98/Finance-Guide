@@ -40,6 +40,9 @@ import com.example.financeguide.ui.components.LocalCurrency
 import com.example.financeguide.ui.screen.onboarding.OnboardingScreen
 import com.example.financeguide.ui.screen.auth.LoginScreen
 
+import com.example.financeguide.ui.components.ThemeAppLogo
+import com.example.financeguide.theme.SpideyPrimaryLight
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +66,7 @@ class MainActivity : ComponentActivity() {
 
             var showSplash by remember { mutableStateOf(true) }
 
-            // Pulse & Rotate animations for the Straw Hat
+            // Pulse & Rotate animations for the logo
             val infiniteTransition = rememberInfiniteTransition(label = "SplashTransition")
             val scale by infiniteTransition.animateFloat(
                 initialValue = 0.85f,
@@ -132,9 +135,8 @@ class MainActivity : ComponentActivity() {
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                // Floating coins background decorations
+                                // Floating background decorations
                                 Box(modifier = Modifier.fillMaxSize()) {
-                                    // Gold Coin 1
                                     GoldCoin(
                                         modifier = Modifier
                                             .align(Alignment.TopStart)
@@ -142,7 +144,6 @@ class MainActivity : ComponentActivity() {
                                             .offset(y = floatAnim1.dp)
                                             .scale(0.8f)
                                     )
-                                    // Gold Coin 2
                                     GoldCoin(
                                         modifier = Modifier
                                             .align(Alignment.BottomEnd)
@@ -150,7 +151,6 @@ class MainActivity : ComponentActivity() {
                                             .offset(y = floatAnim2.dp)
                                             .scale(1.2f)
                                     )
-                                    // Gold Coin 3
                                     GoldCoin(
                                         modifier = Modifier
                                             .align(Alignment.TopEnd)
@@ -164,8 +164,9 @@ class MainActivity : ComponentActivity() {
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    // Pulsing Custom Straw Hat
-                                    StrawHatIcon(
+                                    // Theme-aware Pulsing Logo
+                                    ThemeAppLogo(
+                                        themeMode = themeMode,
                                         modifier = Modifier
                                             .size(160.dp)
                                             .scale(scale)
@@ -176,11 +177,11 @@ class MainActivity : ComponentActivity() {
                                         text = "FINANCE GUIDE",
                                         fontSize = 28.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFFFB703), // Straw Hat Gold
+                                        color = if (themeMode == "spiderman") SpideyPrimaryLight else Color(0xFFFFB703),
                                         letterSpacing = 4.sp
                                     )
                                     Text(
-                                        text = "The Pirate King's Ledger",
+                                        text = if (themeMode == "spiderman") "Friendly Neighborhood Ledger 🕷️" else "The Pirate King's Ledger",
                                         fontSize = 14.sp,
                                         color = Color.White.copy(alpha = 0.6f),
                                         letterSpacing = 2.sp,

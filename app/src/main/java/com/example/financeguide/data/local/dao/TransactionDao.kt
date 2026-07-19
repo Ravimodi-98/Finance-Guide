@@ -39,6 +39,9 @@ interface TransactionDao {
     @Query("SELECT COALESCE(SUM(amount), 0.0) FROM transactions WHERE type = 'EXPENSE' AND category = :category AND date BETWEEN :startDate AND :endDate")
     suspend fun getTotalExpenseByCategory(category: String, startDate: Long, endDate: Long): Double
 
+    @Query("SELECT COALESCE(SUM(amount), 0.0) FROM transactions WHERE type = 'INCOME' AND category = :category AND date BETWEEN :startDate AND :endDate")
+    suspend fun getTotalIncomeByCategory(category: String, startDate: Long, endDate: Long): Double
+
     @Query("SELECT * FROM transactions WHERE type = 'EXPENSE' AND category = :category AND date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getTransactionsByCategory(category: String, startDate: Long, endDate: Long): Flow<List<TransactionEntity>>
 

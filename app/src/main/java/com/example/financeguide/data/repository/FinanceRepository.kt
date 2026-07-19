@@ -45,6 +45,9 @@ class FinanceRepository(
     suspend fun getTotalExpenseByCategory(category: String, startDate: Long, endDate: Long): Double =
         transactionDao.getTotalExpenseByCategory(category, startDate, endDate)
 
+    suspend fun getTotalIncomeByCategory(category: String, startDate: Long, endDate: Long): Double =
+        transactionDao.getTotalIncomeByCategory(category, startDate, endDate)
+
     // --- Budgets ---
 
     fun getBudgetsForMonth(monthYear: String): Flow<List<BudgetEntity>> =

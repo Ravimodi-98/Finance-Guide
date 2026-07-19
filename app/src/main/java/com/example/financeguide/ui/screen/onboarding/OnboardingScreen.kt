@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.financeguide.theme.*
+import com.example.financeguide.ui.components.ThemeAppLogo
 
 @Composable
 fun OnboardingScreen(
@@ -63,17 +64,15 @@ fun OnboardingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = Icons.Rounded.DirectionsBoat,
-                contentDescription = "Ship",
-                tint = Secondary,
-                modifier = Modifier.size(72.dp)
+            ThemeAppLogo(
+                themeMode = selectedTheme,
+                modifier = Modifier.size(80.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Set Sail with FinanceGuide!",
+                text = if (selectedTheme == "spiderman") "Suit Up with FinanceGuide!" else "Set Sail with FinanceGuide!",
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
@@ -81,7 +80,7 @@ fun OnboardingScreen(
             )
 
             Text(
-                text = "Choose your bounty currency and theme style before embarking on your financial journey.",
+                text = if (selectedTheme == "spiderman") "Choose your web currency and hero interface theme before embarking on your financial journey." else "Choose your bounty currency and theme style before embarking on your financial journey.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
@@ -204,20 +203,22 @@ fun OnboardingScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Set Sail Button
+            // Set Sail / Suit Up Button
             Button(
                 onClick = { onComplete(selectedCurrency, selectedTheme) },
-                colors = ButtonDefaults.buttonColors(containerColor = Secondary),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (selectedTheme == "spiderman") SpideyPrimary else Secondary
+                ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
                 Text(
-                    text = "SET SAIL! ⛵",
+                    text = if (selectedTheme == "spiderman") "SUIT UP! 🕷️" else "SET SAIL! ⛵",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = OnSecondary
+                    color = if (selectedTheme == "spiderman") Color.White else OnSecondary
                 )
             }
         }

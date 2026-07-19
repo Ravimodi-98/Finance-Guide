@@ -37,12 +37,14 @@ fun FinanceNavGraph(
 
     Scaffold(
         bottomBar = {
-            if (currentRoute != "finance_ai") {
+            if (currentRoute != "finance_ai" && !currentRoute.startsWith("add_transaction")) {
                 BottomNavBar(
                     currentDestination = currentDestination,
                     onNavigateToDestination = { destination ->
                         if (destination == TopLevelDestination.ADD_TRANSACTION) {
-                            navController.navigate(destination.route)
+                            navController.navigate(destination.route) {
+                                launchSingleTop = true
+                            }
                             return@BottomNavBar
                         }
                         navController.navigate(destination.route) {

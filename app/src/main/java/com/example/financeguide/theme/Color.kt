@@ -54,27 +54,28 @@ val GradientStart = Color(0xFFD00000) // Luffy Red
 val GradientMiddle = Color(0xFFE85D04) // Shanks Orange
 val GradientEnd = Color(0xFFFFB703) // Straw Hat Gold
 
-// Spider-Man theme color palette
-val SpideyPrimary = Color(0xFFE50914) // Spidey Heroic Red
-val SpideyPrimaryLight = Color(0xFFFF5252)
-val SpideyPrimaryDark = Color(0xFFB30006)
-val SpideyOnPrimary = Color(0xFFFFFFFF)
-val SpideyPrimaryContainer = Color(0xFF2C1617)
+// Cinematic Premium Spider-Man UI Theme Palette (Matte Black, Deep Crimson Red, Royal Electric Blue, Pure White)
+val SpideyPrimary = Color(0xFFC1121F) // Deep Crimson Red Accent
+val SpideyPrimaryLight = Color(0xFFE63946)
+val SpideyPrimaryDark = Color(0xFF780000)
+val SpideyOnPrimary = Color(0xFFFFFFFF) // Pure White
+val SpideyPrimaryContainer = Color(0xFF2C0A0D) // Matte Dark Red Container
 val SpideyOnPrimaryContainer = Color(0xFFFFC5C8)
 
-val SpideySecondary = Color(0xFF0056B3) // Web-Slinger Blue
-val SpideySecondaryLight = Color(0xFF4C94FF)
-val SpideySecondaryDark = Color(0xFF003D82)
-val SpideyOnSecondary = Color(0xFFFFFFFF)
-val SpideySecondaryContainer = Color(0xFF0F1E36)
+val SpideySecondary = Color(0xFF1D4ED8) // Royal Electric Blue Accent
+val SpideySecondaryLight = Color(0xFF3B82F6)
+val SpideySecondaryDark = Color(0xFF1E3A8A)
+val SpideyOnSecondary = Color(0xFFFFFFFF) // Pure White
+val SpideySecondaryContainer = Color(0xFF0F1B3D) // Matte Dark Blue Container
 val SpideyOnSecondaryContainer = Color(0xFFD4E3FF)
 
-val SpideySurface = Color(0xFF060913) // Deep Queens/NYC Night Black
-val SpideySurfaceVariant = Color(0xFF0F1526) // City web dark slate
-val SpideySurfaceElevated = Color(0xFF1B243B)
-val SpideyOutline = Color(0xFF2E3B5C)
-val SpideyOnSurface = Color(0xFFF1F5F9)
-val SpideyOnSurfaceVariant = Color(0xFF94A3B8)
+val SpideyBackground = Color(0xFF0A0A0A) // Matte Charcoal Black Background
+val SpideySurface = Color(0xFF121212) // Matte Dark Charcoal Card Surface
+val SpideySurfaceVariant = Color(0xFF161B26) // Sleek Glass Slate Card
+val SpideySurfaceElevated = Color(0xFF1F2636) // Elevated Surface
+val SpideyOutline = Color(0xFF2B3A5E) // Subtle Ambient Border
+val SpideyOnSurface = Color(0xFFFFFFFF) // Pure Crisp White Text
+val SpideyOnSurfaceVariant = Color(0xFFCBD5E1) // Soft Gray Subtitles
 
 val ChartColors = listOf(
     Color(0xFFD00000), // Luffy Red

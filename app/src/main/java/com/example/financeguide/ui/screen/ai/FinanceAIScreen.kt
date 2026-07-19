@@ -7,6 +7,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -51,6 +52,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financeguide.theme.*
 import com.example.financeguide.theme.LocalThemeStrings
+import com.example.financeguide.ui.components.SpiderManAvatar
+import com.example.financeguide.ui.components.SpiderWebWatermark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,6 +65,7 @@ fun FinanceAIScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var inputText by remember { mutableStateOf("") }
     val strings = LocalThemeStrings.current
+    val isSpidey = strings.chatbotName == "Spider-Man"
     
     val listState = rememberLazyListState()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -70,7 +74,16 @@ fun FinanceAIScreen(
 
     val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
 
-    // Auto-scroll to the bottom when new messages arrive or keyboard is opened (WhatsApp style)
+    // Theme Colors
+    val screenBg = if (isSpidey) Color(0xFF0A0A0A) else Color(0xFF0B141A)
+    val headerBg = if (isSpidey) Color(0xFF121212) else Color(0xFF1F2C34)
+    val topBorderGradient = if (isSpidey) {
+        listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
+    } else {
+        listOf(Color(0xFF1E88E5), Color(0xFFF6C445))
+    }
+
+    // Auto-scroll to the bottom when new messages arrive
     LaunchedEffect(uiState.messages.size, uiState.isLoading, isKeyboardOpen) {
         if (uiState.messages.isNotEmpty()) {
             if (isKeyboardOpen) {
@@ -82,74 +95,87 @@ fun FinanceAIScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        NavigatorAvatar(modifier = Modifier.size(38.dp))
-                        Column {
-                            Text(
-                                text = strings.chatbotTitle,
-                                color = Color.White,
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                            )
-                            Text(
-                                text = if (uiState.isLoading) "typing..." else strings.chatbotStatusOnline,
-                                color = if (uiState.isLoading) Color(0xFF00A884) else Color.White.copy(alpha = 0.6f),
-                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
+            Column {
+                TopAppBar(
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            NavigatorAvatar(modifier = Modifier.size(38.dp))
+                            Column {
+                                Text(
+                                    text = strings.chatbotTitle,
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = if (uiState.isLoading) {
+                                        if (isSpidey) "spider-sense tingling..." else "calculating route..."
+                                    } else {
+                                        if (isSpidey) "online & patrolling 🕸️" else "online & sailing ⛵"
+                                    },
+                                    color = if (uiState.isLoading) (if (isSpidey) Color(0xFF60A5FA) else Color(0xFFF6C445)) else Color.White.copy(alpha = 0.65f),
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
+                                )
+                            }
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.Rounded.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
                             )
                         }
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.Rounded.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.Rounded.Videocam,
-                            contentDescription = "Video Call",
-                            tint = Color.White,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.Rounded.Call,
-                            contentDescription = "Call",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    IconButton(onClick = { viewModel.clearChat() }) {
-                        Icon(
-                            imageVector = Icons.Rounded.MoreVert,
-                            contentDescription = "Menu / Clear Chat",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1F2C34),
-                    titleContentColor = Color.White
+                    },
+                    actions = {
+                        IconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.Rounded.Videocam,
+                                contentDescription = "Video Call",
+                                tint = Color.White,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        IconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.Rounded.Call,
+                                contentDescription = "Call",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        IconButton(onClick = { viewModel.clearChat() }) {
+                            Icon(
+                                imageVector = Icons.Rounded.MoreVert,
+                                contentDescription = "Menu / Clear Chat",
+                                tint = Color.White
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = headerBg,
+                        titleContentColor = Color.White
+                    )
                 )
-            )
+                // Bottom Accent Border Line
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(2.dp)
+                        .background(brush = Brush.horizontalGradient(topBorderGradient))
+                )
+            }
         },
-        containerColor = Color(0xFF0B141A)
+        containerColor = screenBg
     ) { innerPadding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFF0B141A))
+                .background(screenBg)
         ) {
             // Error banner
             AnimatedVisibility(
@@ -194,8 +220,6 @@ fun FinanceAIScreen(
                 }
             }
 
-
-
             // Message List
             Box(
                 modifier = Modifier
@@ -204,7 +228,7 @@ fun FinanceAIScreen(
             ) {
                 BackgroundWatermark(modifier = Modifier.fillMaxSize())
                 if (uiState.messages.isEmpty()) {
-                    // Empty state showing Straw Hat guidelines
+                    // Empty state showing theme welcome guidance
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -212,15 +236,15 @@ fun FinanceAIScreen(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        NavigatorAvatar(modifier = Modifier.size(if (isKeyboardOpen) 60.dp else 120.dp))
-                        Spacer(modifier = Modifier.height(if (isKeyboardOpen) 8.dp else 24.dp))
+                        NavigatorAvatar(modifier = Modifier.size(if (isKeyboardOpen) 60.dp else 110.dp))
+                        Spacer(modifier = Modifier.height(if (isKeyboardOpen) 8.dp else 20.dp))
                         Text(
                             text = strings.chatbotWelcomeTitle,
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = if (isKeyboardOpen) 20.sp else 28.sp
+                                fontSize = if (isKeyboardOpen) 20.sp else 26.sp
                             ),
-                            color = Secondary,
+                            color = if (isSpidey) Color(0xFF60A5FA) else Secondary,
                             textAlign = TextAlign.Center
                         )
                         if (!isKeyboardOpen) {
@@ -228,7 +252,7 @@ fun FinanceAIScreen(
                             Text(
                                 text = strings.chatbotWelcomeBody,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = OnSurfaceDarkVariant,
+                                color = Color.White.copy(alpha = 0.75f),
                                 textAlign = TextAlign.Center,
                                 lineHeight = 22.sp
                             )
@@ -236,7 +260,7 @@ fun FinanceAIScreen(
                             Text(
                                 text = strings.chatbotWelcomeQuote,
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                color = SecondaryLight,
+                                color = if (isSpidey) Color(0xFFF6C445) else SecondaryLight,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -251,6 +275,7 @@ fun FinanceAIScreen(
                         items(uiState.messages) { message ->
                             ChatBubble(
                                 message = message,
+                                isSpidey = isSpidey,
                                 onCopy = {
                                     clipboardManager.setText(AnnotatedString(message.text))
                                     Toast.makeText(context, strings.copiedToast, Toast.LENGTH_SHORT).show()
@@ -261,10 +286,9 @@ fun FinanceAIScreen(
                                         putExtra(Intent.EXTRA_TEXT, message.text)
                                         type = "text/plain"
                                     }
-                                    context.startActivity(Intent.createChooser(sendIntent, "Share Navigator's Log"))
+                                    context.startActivity(Intent.createChooser(sendIntent, "Share Message"))
                                 },
                                 onRegenerate = {
-                                    // Find last user message
                                     val lastUserMessage = uiState.messages.lastOrNull { it.isFromUser }?.text
                                     if (lastUserMessage != null) {
                                         viewModel.sendMessage(lastUserMessage)
@@ -276,7 +300,7 @@ fun FinanceAIScreen(
 
                         if (uiState.isLoading) {
                             item {
-                                TypingIndicatorRow()
+                                TypingIndicatorRow(isSpidey = isSpidey)
                             }
                         }
                     }
@@ -297,21 +321,24 @@ fun FinanceAIScreen(
 
             // Input Row
             Surface(
-                color = Color(0xFF1F2C34), // WhatsApp dark bottom bar color
-                tonalElevation = 8.dp,
-                modifier = Modifier.fillMaxWidth()
+                color = if (isSpidey) Color(0xFF121212) else Color(0xFF1F2C34),
+                tonalElevation = 8.dp
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 8.dp, vertical = 6.dp)
-                        .navigationBarsPadding(),
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    // WhatsApp Styled Input Capsule
+                    // Theme Styled Input Box
                     Surface(
                         shape = RoundedCornerShape(24.dp),
-                        color = Color(0xFF2A3942), // WhatsApp dark input box color
+                        color = if (isSpidey) Color(0xFF1E1E1E) else Color(0xFF2A3942),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isSpidey) Color(0xFFC1121F).copy(alpha = 0.35f) else Color(0xFFF6C445).copy(alpha = 0.25f)
+                        ),
                         modifier = Modifier.weight(1f)
                     ) {
                         Row(
@@ -332,7 +359,7 @@ fun FinanceAIScreen(
                                 onValueChange = { inputText = it },
                                 placeholder = {
                                     Text(
-                                        text = "Message",
+                                        text = if (isSpidey) "Ask Spider-Man..." else "Message Nami...",
                                         color = Color.White.copy(alpha = 0.4f),
                                         style = MaterialTheme.typography.bodyMedium
                                     )
@@ -374,20 +401,26 @@ fun FinanceAIScreen(
                         }
                     }
 
-                    // Circular send button
-                    FloatingActionButton(
-                        onClick = {
-                            if (inputText.isNotBlank() && !uiState.isLoading) {
-                                viewModel.sendMessage(inputText)
-                                inputText = ""
-                                keyboardController?.hide()
-                            }
-                        },
-                        containerColor = Color(0xFF00A884), // WhatsApp Green
-                        contentColor = Color.White,
-                        shape = CircleShape,
-                        elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 2.dp),
-                        modifier = Modifier.size(48.dp)
+                    // Theme FAB Send Button
+                    val sendGradient = if (isSpidey) {
+                        listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
+                    } else {
+                        listOf(Color(0xFF1E88E5), Color(0xFF00A884))
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(brush = Brush.linearGradient(sendGradient))
+                            .clickable {
+                                if (inputText.isNotBlank() && !uiState.isLoading) {
+                                    viewModel.sendMessage(inputText)
+                                    inputText = ""
+                                    keyboardController?.hide()
+                                }
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = if (inputText.isNotBlank()) Icons.AutoMirrored.Rounded.Send else Icons.Rounded.Mic,
@@ -405,19 +438,31 @@ fun FinanceAIScreen(
 @Composable
 fun ChatBubble(
     message: ChatMessage,
+    isSpidey: Boolean,
     onCopy: () -> Unit,
     onShare: () -> Unit,
     onRegenerate: () -> Unit,
     isLast: Boolean
 ) {
     val bubbleShape = if (message.isFromUser) {
-        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 12.dp, bottomEnd = 2.dp)
+        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 4.dp)
     } else {
-        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 2.dp, bottomEnd = 12.dp)
+        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 4.dp, bottomEnd = 16.dp)
     }
 
     val alignment = if (message.isFromUser) Alignment.CenterEnd else Alignment.CenterStart
-    val containerColor = if (message.isFromUser) Color(0xFF005C4B) else Color(0xFF202C33) // WhatsApp sent vs received bubble colors
+    
+    val containerColor = if (message.isFromUser) {
+        if (isSpidey) Color(0xFF1D4ED8) else Color(0xFF005C4B)
+    } else {
+        if (isSpidey) Color(0xFF1C1315) else Color(0xFF202C33)
+    }
+
+    val borderColor = if (!message.isFromUser) {
+        if (isSpidey) Color(0xFFC1121F).copy(alpha = 0.4f) else Color(0xFFF6C445).copy(alpha = 0.3f)
+    } else {
+        Color.Transparent
+    }
 
     val timeText = remember(message.timestamp) {
         java.text.SimpleDateFormat("h:mm a", java.util.Locale.US).format(java.util.Date(message.timestamp))
@@ -433,11 +478,12 @@ fun ChatBubble(
         ) {
             Surface(
                 shape = bubbleShape,
-                color = containerColor
+                color = containerColor,
+                border = if (borderColor != Color.Transparent) BorderStroke(1.dp, borderColor) else null
             ) {
-                Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
                     Text(
-                        text = parseMarkdown(message.text),
+                        text = parseMarkdown(message.text, isSpidey),
                         color = Color.White,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             lineHeight = 20.sp,
@@ -454,7 +500,7 @@ fun ChatBubble(
                     ) {
                         Text(
                             text = timeText,
-                            color = Color.White.copy(alpha = 0.5f),
+                            color = Color.White.copy(alpha = 0.55f),
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp)
                         )
                         if (message.isFromUser) {
@@ -462,18 +508,17 @@ fun ChatBubble(
                             Icon(
                                 imageVector = Icons.Rounded.DoneAll,
                                 contentDescription = "Read",
-                                tint = Color(0xFF53BDEB), // WhatsApp double blue checkmark color
+                                tint = if (isSpidey) Color(0xFF60A5FA) else Color(0xFF53BDEB),
                                 modifier = Modifier.size(13.dp)
                             )
                         }
                     }
 
-                    // Action buttons (Copy/Share) inside Nami's message bubble
                     if (!message.isFromUser) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp)
+                                .padding(vertical = 6.dp)
                                 .height(0.5.dp)
                                 .background(Color.White.copy(alpha = 0.08f))
                         )
@@ -532,15 +577,18 @@ fun HorizontalSuggestedQuestions(
     suggestions: List<String>,
     onSelect: (String) -> Unit
 ) {
+    val strings = LocalThemeStrings.current
+    val isSpidey = strings.chatbotName == "Spider-Man"
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 8.dp)
     ) {
         Text(
-            text = "Suggested Questions",
+            text = if (isSpidey) "Suggested Hero Prompts 🕸️" else "Suggested Crew Questions 📜",
             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-            color = SecondaryLight,
+            color = if (isSpidey) Color(0xFFF6C445) else SecondaryLight,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
         )
         LazyRow(
@@ -564,20 +612,41 @@ fun SuggestionChip(
     label: String,
     onClick: () -> Unit
 ) {
-    val emoji = when {
-        label.contains("spent") || label.contains("Beli on") -> "🍖"
-        label.contains("earned") || label.contains("treasure") -> "🪙"
-        label.contains("budget") || label.contains("limit") -> "📊"
-        label.contains("reduce") || label.contains("save") -> "📉"
-        label.contains("emergency") -> "🛡️"
-        label.contains("invest") -> "📈"
-        else -> "🧭"
+    val strings = LocalThemeStrings.current
+    val isSpidey = strings.chatbotName == "Spider-Man"
+
+    val emoji = if (isSpidey) {
+        when {
+            label.contains("stocks") || label.contains("IPOs") || label.contains("market") -> "📈"
+            label.contains("banking") || label.contains("interest") -> "🏦"
+            label.contains("news") -> "📰"
+            label.contains("spent") || label.contains("mission") -> "🕸️"
+            label.contains("earned") || label.contains("S.H.I.E.L.D.") -> "🕷️"
+            label.contains("budget") || label.contains("tech") -> "🧪"
+            label.contains("reduce") || label.contains("save") || label.contains("split") -> "🛡️"
+            else -> "🕸️"
+        }
+    } else {
+        when {
+            label.contains("stocks") || label.contains("IPOs") || label.contains("portfolio") -> "📈"
+            label.contains("banking") || label.contains("interest") || label.contains("deposits") -> "🏦"
+            label.contains("news") -> "📰"
+            label.contains("spent") || label.contains("Beli on") -> "🍖"
+            label.contains("earned") || label.contains("treasure") -> "🪙"
+            label.contains("budget") || label.contains("limit") -> "📊"
+            label.contains("reduce") || label.contains("save") -> "📉"
+            label.contains("emergency") -> "🛡️"
+            else -> "⛵"
+        }
     }
+
+    val borderColor = if (isSpidey) Color(0xFFC1121F).copy(alpha = 0.45f) else Color(0xFFF6C445).copy(alpha = 0.35f)
+    val chipBg = if (isSpidey) Color(0xFF161616) else SurfaceDarkElevated
 
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = SurfaceDarkElevated,
-        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineDark),
+        color = chipBg,
+        border = BorderStroke(1.dp, borderColor),
         modifier = Modifier.clickable { onClick() }
     ) {
         Row(
@@ -596,7 +665,7 @@ fun SuggestionChip(
 }
 
 @Composable
-fun TypingIndicatorRow() {
+fun TypingIndicatorRow(isSpidey: Boolean = false) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -607,8 +676,9 @@ fun TypingIndicatorRow() {
         NavigatorAvatar(modifier = Modifier.size(28.dp))
         Spacer(modifier = Modifier.width(8.dp))
         Surface(
-            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 2.dp, bottomEnd = 12.dp),
-            color = Color(0xFF202C33)
+            shape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp, bottomStart = 4.dp, bottomEnd = 14.dp),
+            color = if (isSpidey) Color(0xFF1C1315) else Color(0xFF202C33),
+            border = BorderStroke(1.dp, if (isSpidey) Color(0xFFC1121F).copy(alpha = 0.4f) else Color(0xFFF6C445).copy(alpha = 0.3f))
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -662,146 +732,154 @@ fun TypingIndicatorRow() {
                     label = "Dot3"
                 )
 
-                Dot(opacity = dot1)
-                Dot(opacity = dot2)
-                Dot(opacity = dot3)
+                Dot(opacity = dot1, color = if (isSpidey) Color(0xFFC1121F) else Secondary)
+                Dot(opacity = dot2, color = if (isSpidey) Color(0xFF1D4ED8) else Secondary)
+                Dot(opacity = dot3, color = if (isSpidey) Color(0xFFF6C445) else Secondary)
             }
         }
     }
 }
 
 @Composable
-fun Dot(opacity: Float) {
+fun Dot(opacity: Float, color: Color = Secondary) {
     Box(
         modifier = Modifier
             .size(8.dp)
             .clip(CircleShape)
-            .background(Secondary.copy(alpha = maxOf(0.2f, opacity)))
+            .background(color.copy(alpha = maxOf(0.2f, opacity)))
     )
 }
 
 @Composable
 fun NavigatorAvatar(modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier) {
-        val w = size.width
-        val h = size.height
-        val radius = size.minDimension / 2
-        
-        // Outer golden rim
-        drawCircle(
-            color = Color(0xFFFFB703),
-            radius = radius
-        )
-        // Inner ocean blue background
-        drawCircle(
-            color = Color(0xFF023047),
-            radius = radius * 0.85f
-        )
-        // Compass coordinate ticks
-        drawLine(
-            color = Color(0xFFFFD166),
-            start = Offset(w * 0.5f, h * 0.22f),
-            end = Offset(w * 0.5f, h * 0.78f),
-            strokeWidth = 3f
-        )
-        drawLine(
-            color = Color(0xFFFFD166),
-            start = Offset(w * 0.22f, h * 0.5f),
-            end = Offset(w * 0.78f, h * 0.5f),
-            strokeWidth = 3f
-        )
-        
-        // Red pointer (North)
-        val north = Path().apply {
-            moveTo(w * 0.5f, h * 0.18f)
-            lineTo(w * 0.44f, h * 0.5f)
-            lineTo(w * 0.56f, h * 0.5f)
-            close()
+    val strings = LocalThemeStrings.current
+    if (strings.chatbotName == "Spider-Man") {
+        SpiderManAvatar(modifier = modifier)
+    } else {
+        Canvas(modifier = modifier) {
+            val radius = size.minDimension / 2
+            
+            // Outer golden rim
+            drawCircle(
+                color = Color(0xFFFFB703),
+                radius = radius
+            )
+            // Inner ocean blue background
+            drawCircle(
+                color = Color(0xFF023047),
+                radius = radius * 0.85f
+            )
+            // Compass coordinate ticks
+            val w = size.width
+            val h = size.height
+            drawLine(
+                color = Color(0xFFFFD166),
+                start = Offset(w * 0.5f, h * 0.22f),
+                end = Offset(w * 0.5f, h * 0.78f),
+                strokeWidth = 3f
+            )
+            drawLine(
+                color = Color(0xFFFFD166),
+                start = Offset(w * 0.22f, h * 0.5f),
+                end = Offset(w * 0.78f, h * 0.5f),
+                strokeWidth = 3f
+            )
+            
+            // Red pointer (North)
+            val north = Path().apply {
+                moveTo(w * 0.5f, h * 0.18f)
+                lineTo(w * 0.44f, h * 0.5f)
+                lineTo(w * 0.56f, h * 0.5f)
+                close()
+            }
+            drawPath(north, color = Color(0xFFD00000))
+            
+            // White pointer (South)
+            val south = Path().apply {
+                moveTo(w * 0.5f, h * 0.82f)
+                lineTo(w * 0.44f, h * 0.5f)
+                lineTo(w * 0.56f, h * 0.5f)
+                close()
+            }
+            drawPath(south, color = Color(0xFFF1F5F9))
+            
+            // Golden center pin
+            drawCircle(
+                color = Color(0xFFFFB703),
+                radius = radius * 0.12f
+            )
         }
-        drawPath(north, color = Color(0xFFD00000))
-        
-        // White pointer (South)
-        val south = Path().apply {
-            moveTo(w * 0.5f, h * 0.82f)
-            lineTo(w * 0.44f, h * 0.5f)
-            lineTo(w * 0.56f, h * 0.5f)
-            close()
-        }
-        drawPath(south, color = Color(0xFFF1F5F9))
-        
-        // Golden center pin
-        drawCircle(
-            color = Color(0xFFFFB703),
-            radius = radius * 0.12f
-        )
     }
 }
 
 @Composable
 fun BackgroundWatermark(modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier) {
-        val w = size.width
-        val h = size.height
-        val radius = size.minDimension * 0.35f
-        val center = Offset(w * 0.5f, h * 0.45f) // Centered slightly higher for balance
+    val strings = LocalThemeStrings.current
+    if (strings.chatbotName == "Spider-Man") {
+        SpiderWebWatermark(modifier = modifier)
+    } else {
+        Canvas(modifier = modifier) {
+            val w = size.width
+            val h = size.height
+            val radius = size.minDimension * 0.35f
+            val center = Offset(w * 0.5f, h * 0.45f)
 
-        // Draw compass rose outer dashed circle
-        drawCircle(
-            color = Color(0xFFFFB703).copy(alpha = 0.05f),
-            radius = radius,
-            center = center,
-            style = androidx.compose.ui.graphics.drawscope.Stroke(
-                width = 2f,
-                pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+            // Draw compass rose outer dashed circle
+            drawCircle(
+                color = Color(0xFFFFB703).copy(alpha = 0.05f),
+                radius = radius,
+                center = center,
+                style = androidx.compose.ui.graphics.drawscope.Stroke(
+                    width = 2f,
+                    pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                )
             )
-        )
 
-        // Draw inner circle
-        drawCircle(
-            color = Color(0xFFFFB703).copy(alpha = 0.03f),
-            radius = radius * 0.8f,
-            center = center,
-            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1f)
-        )
-
-        // Draw directional axes
-        val directions = listOf(0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f)
-        for (angle in directions) {
-            val rad = Math.toRadians(angle.toDouble())
-            val endX = center.x + radius * Math.cos(rad).toFloat()
-            val endY = center.y + radius * Math.sin(rad).toFloat()
-            drawLine(
-                color = Color(0xFFFFB703).copy(alpha = 0.04f),
-                start = center,
-                end = Offset(endX, endY),
-                strokeWidth = 2f
+            // Draw inner circle
+            drawCircle(
+                color = Color(0xFFFFB703).copy(alpha = 0.03f),
+                radius = radius * 0.8f,
+                center = center,
+                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1f)
             )
-        }
 
-        // Draw compass cardinal pointers (N, S, E, W lines)
-        val cardinalPoints = listOf(
-            Offset(center.x, center.y - radius * 1.05f) to Offset(center.x, center.y + radius * 1.05f),
-            Offset(center.x - radius * 1.05f, center.y) to Offset(center.x + radius * 1.05f, center.y)
-        )
-        for (line in cardinalPoints) {
-            drawLine(
-                color = Color(0xFFFFD166).copy(alpha = 0.05f),
-                start = line.first,
-                end = line.second,
-                strokeWidth = 3f
+            // Draw directional axes
+            val directions = listOf(0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f)
+            for (angle in directions) {
+                val rad = Math.toRadians(angle.toDouble())
+                val endX = center.x + radius * Math.cos(rad).toFloat()
+                val endY = center.y + radius * Math.sin(rad).toFloat()
+                drawLine(
+                    color = Color(0xFFFFB703).copy(alpha = 0.04f),
+                    start = center,
+                    end = Offset(endX, endY),
+                    strokeWidth = 2f
+                )
+            }
+
+            val cardinalPoints = listOf(
+                Offset(center.x, center.y - radius * 1.05f) to Offset(center.x, center.y + radius * 1.05f),
+                Offset(center.x - radius * 1.05f, center.y) to Offset(center.x + radius * 1.05f, center.y)
             )
+            for (line in cardinalPoints) {
+                drawLine(
+                    color = Color(0xFFFFD166).copy(alpha = 0.05f),
+                    start = line.first,
+                    end = line.second,
+                    strokeWidth = 3f
+                )
+            }
         }
     }
 }
 
-// Basic parser that formats double asterisks (**word**) into bold styling in compose
-private fun parseMarkdown(text: String): AnnotatedString {
+private fun parseMarkdown(text: String, isSpidey: Boolean = false): AnnotatedString {
+    val highlightColor = if (isSpidey) Color(0xFFF6C445) else SecondaryLight
     val builder = buildAnnotatedString {
         val parts = text.split("**")
         for (i in parts.indices) {
             if (i % 2 == 1) {
-                // Odd indices contain bold elements
-                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = SecondaryLight)) {
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = highlightColor)) {
                     append(parts[i])
                 }
             } else {

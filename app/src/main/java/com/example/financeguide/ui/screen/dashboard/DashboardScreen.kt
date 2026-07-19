@@ -91,12 +91,18 @@ fun DashboardScreen(
                         IconButton(
                             onClick = onNavigateToAI
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Explore,
-                                contentDescription = "Finance Navigator",
-                                tint = com.example.financeguide.theme.Secondary,
-                                modifier = Modifier.size(28.dp)
-                            )
+                            if (strings.chatbotName == "Spider-Man") {
+                                com.example.financeguide.ui.components.SpiderManAvatar(
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.Explore,
+                                    contentDescription = "Finance Navigator",
+                                    tint = com.example.financeguide.theme.Secondary,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
                         }
                     }
                     BalanceCard(

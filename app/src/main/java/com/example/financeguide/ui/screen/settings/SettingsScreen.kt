@@ -93,22 +93,27 @@ fun SettingsScreen(
         else -> currencyCode
     }
 
+    val isSpideyTheme = strings.chatbotName == "Spider-Man"
+
+    val displayUserName = if (userName == "Guest Pirate" && isSpideyTheme) "Web Slinger Agent" else userName
+    val displayUserEmail = if (userEmail == "guest@strawhats.org" && isSpideyTheme) "agent@shield.org" else userEmail
+
     val avatarEmoji = when (userAvatar) {
-        "Luffy" -> "🍖"
-        "Zoro" -> "⚔️"
-        "Nami" -> "🍊"
-        "Sanji" -> "🍳"
-        "Chopper" -> "🌸"
-        else -> "🍖"
+        "Spidey", "Luffy" -> if (isSpideyTheme) "🕷️" else "🍖"
+        "Miles", "Zoro" -> if (isSpideyTheme) "⚡" else "⚔️"
+        "Gwen", "Nami" -> if (isSpideyTheme) "🕸️" else "🍊"
+        "Peter", "Sanji" -> if (isSpideyTheme) "📷" else "🍳"
+        "MJ", "Chopper" -> if (isSpideyTheme) "💖" else "🌸"
+        else -> if (isSpideyTheme) "🕷️" else "🍖"
     }
 
     val avatarColor = when (userAvatar) {
-        "Luffy" -> Color(0xFFD00000)
-        "Zoro" -> Color(0xFF2A9D8F)
-        "Nami" -> Color(0xFFFFB703)
-        "Sanji" -> Color(0xFF3B82F6)
-        "Chopper" -> Color(0xFFEC4899)
-        else -> Color(0xFFFFB703)
+        "Spidey", "Luffy" -> if (isSpideyTheme) Color(0xFFE50914) else Color(0xFFD00000)
+        "Miles", "Zoro" -> if (isSpideyTheme) Color(0xFFFF1744) else Color(0xFF2A9D8F)
+        "Gwen", "Nami" -> if (isSpideyTheme) Color(0xFFF48FB1) else Color(0xFFFFB703)
+        "Peter", "Sanji" -> if (isSpideyTheme) Color(0xFF0056B3) else Color(0xFF3B82F6)
+        "MJ", "Chopper" -> if (isSpideyTheme) Color(0xFFE91E63) else Color(0xFFEC4899)
+        else -> if (isSpideyTheme) Color(0xFFE50914) else Color(0xFFFFB703)
     }
 
     var notificationsEnabled by remember { mutableStateOf(true) }
@@ -162,13 +167,13 @@ fun SettingsScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = userName,
+                            text = displayUserName,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = userEmail,
+                            text = displayUserEmail,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -250,8 +255,8 @@ fun SettingsScreen(
 
             SettingsClickableItem(
                 icon = Icons.Rounded.Logout,
-                title = "Log Out of Crew",
-                subtitle = "Sign out from this pirate ledger",
+                title = if (isSpideyTheme) "Log Out of Account" else "Log Out of Crew",
+                subtitle = if (isSpideyTheme) "Sign out from this web ledger" else "Sign out from this pirate ledger",
                 onClick = { settingsManager.logout() }
             )
             
@@ -393,37 +398,47 @@ fun SettingsScreen(
     }
 
     if (showEditProfileDialog) {
-        var editName by remember { mutableStateOf(userName) }
-        var editEmail by remember { mutableStateOf(userEmail) }
+        var editName by remember { mutableStateOf(displayUserName) }
+        var editEmail by remember { mutableStateOf(displayUserEmail) }
         var editAvatar by remember { mutableStateOf(userAvatar) }
 
-        val avatarsList = listOf(
-            Pair("Luffy", "🍖"),
-            Pair("Zoro", "⚔️"),
-            Pair("Nami", "🍊"),
-            Pair("Sanji", "🍳"),
-            Pair("Chopper", "🌸")
-        )
+        val avatarsList = if (isSpideyTheme) {
+            listOf(
+                Pair("Spidey", "🕷️"),
+                Pair("Miles", "⚡"),
+                Pair("Gwen", "🕸️"),
+                Pair("Peter", "📷"),
+                Pair("MJ", "💖")
+            )
+        } else {
+            listOf(
+                Pair("Luffy", "🍖"),
+                Pair("Zoro", "⚔️"),
+                Pair("Nami", "🍊"),
+                Pair("Sanji", "🍳"),
+                Pair("Chopper", "🌸")
+            )
+        }
 
         AlertDialog(
             onDismissRequest = { showEditProfileDialog = false },
-            title = { Text("Edit Crew Profile") },
+            title = { Text(if (isSpideyTheme) "Edit Hero Profile" else "Edit Crew Profile") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = editName,
                         onValueChange = { editName = it },
-                        label = { Text("Pirate Name") },
+                        label = { Text(if (isSpideyTheme) "Hero Name" else "Pirate Name") },
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
                         value = editEmail,
                         onValueChange = { editEmail = it },
-                        label = { Text("Crew Email") },
+                        label = { Text(if (isSpideyTheme) "Hero Email" else "Crew Email") },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(
-                        text = "Crew Identity",
+                        text = if (isSpideyTheme) "Hero Identity" else "Crew Identity",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 8.dp)

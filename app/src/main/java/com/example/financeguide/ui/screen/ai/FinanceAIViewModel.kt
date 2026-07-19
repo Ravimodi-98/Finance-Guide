@@ -45,19 +45,23 @@ data class ChatUiState(
 
 private fun suggestionsForTheme(theme: String): List<String> = if (theme == "spiderman") {
     listOf(
+        "What are top growth stocks & IPOs right now?",
+        "How do central bank interest rates affect inflation?",
+        "What's the latest stock market & financial news?",
         "I spent 500 Credits on mission gear",
         "I earned 10000 Credits from a S.H.I.E.L.D. mission",
         "Set budget of 3000 Credits for tech upgrades",
-        "Reduce unnecessary expenses",
-        "How much should I save every month?"
+        "How should I split savings between stocks & mutual funds?"
     )
 } else {
     listOf(
+        "What are top growth stocks & IPOs to invest in?",
+        "Explain banking interest rates & fixed deposits",
+        "What's the latest financial & market news?",
         "I spent 500 Beli on food",
         "I earned 10000 Beli from a treasure hunt",
         "Set budget of 3000 Beli for entertainment",
-        "Reduce unnecessary expenses",
-        "How much should I save every month?"
+        "How should I build a strong investment portfolio?"
     )
 }
 
