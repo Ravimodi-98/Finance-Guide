@@ -80,9 +80,8 @@ fun SettingsScreen(
     val currentThemeName = when (themeMode) {
         "onepiece" -> "One Piece Theme"
         "spiderman" -> "Spider-Man Theme"
-        "dark" -> "One Piece Theme"
-        "light" -> "Spider-Man Theme"
-        else -> "System Default"
+        "basic" -> "Finance Pro Theme"
+        else -> "One Piece Theme"
     }
 
     val currentCurrencyName = when (currencyCode) {
@@ -270,18 +269,18 @@ fun SettingsScreen(
             title = { Text("Select Theme") },
             text = {
                 Column {
-                    TextButton(onClick = { 
+                    TextButton(onClick = {
                         settingsManager.setTheme("onepiece")
                         showThemeDialog = false
-                    }) { Text("One Piece Theme") }
-                    TextButton(onClick = { 
+                    }) { Text("One Piece 🏴‍☠️") }
+                    TextButton(onClick = {
                         settingsManager.setTheme("spiderman")
                         showThemeDialog = false
-                    }) { Text("Spider-Man Theme") }
-                    TextButton(onClick = { 
-                        settingsManager.setTheme("system")
+                    }) { Text("Spider-Man 🕷️") }
+                    TextButton(onClick = {
+                        settingsManager.setTheme("basic")
                         showThemeDialog = false
-                    }) { Text("System Default") }
+                    }) { Text("Finance Pro 📊") }
                 }
             },
             confirmButton = {},

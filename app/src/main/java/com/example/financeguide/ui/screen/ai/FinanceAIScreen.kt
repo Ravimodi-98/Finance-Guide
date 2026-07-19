@@ -66,7 +66,8 @@ fun FinanceAIScreen(
     var inputText by remember { mutableStateOf("") }
     val strings = LocalThemeStrings.current
     val isSpidey = strings.chatbotName == "Spider-Man"
-    
+    val isBasic = strings.chatbotName == "FinBot"
+
     val listState = rememberLazyListState()
     val keyboardController = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
@@ -75,12 +76,20 @@ fun FinanceAIScreen(
     val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
 
     // Theme Colors
-    val screenBg = if (isSpidey) Color(0xFF0A0A0A) else Color(0xFF0B141A)
-    val headerBg = if (isSpidey) Color(0xFF121212) else Color(0xFF1F2C34)
-    val topBorderGradient = if (isSpidey) {
-        listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
-    } else {
-        listOf(Color(0xFF1E88E5), Color(0xFFF6C445))
+    val screenBg = when {
+        isSpidey -> Color(0xFF0A0A0A)
+        isBasic  -> Color(0xFF09090B)
+        else     -> Color(0xFF0B141A)
+    }
+    val headerBg = when {
+        isSpidey -> Color(0xFF121212)
+        isBasic  -> Color(0xFF111115)
+        else     -> Color(0xFF1F2C34)
+    }
+    val topBorderGradient = when {
+        isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
+        isBasic  -> listOf(Color(0xFF6366F1), Color(0xFF10B981))
+        else     -> listOf(Color(0xFF1E88E5), Color(0xFFF6C445))
     }
 
     // Auto-scroll to the bottom when new messages arrive
@@ -111,11 +120,25 @@ fun FinanceAIScreen(
                                 )
                                 Text(
                                     text = if (uiState.isLoading) {
-                                        if (isSpidey) "spider-sense tingling..." else "calculating route..."
+                                        when {
+                                            isSpidey -> "spider-sense tingling..."
+                                            isBasic  -> "analyzing data..."
+                                            else     -> "calculating route..."
+                                        }
                                     } else {
-                                        if (isSpidey) "online & patrolling 🕸️" else "online & sailing ⛵"
+                                        when {
+                                            isSpidey -> "online & patrolling 🕸️"
+                                            isBasic  -> "online & analyzing 📊"
+                                            else     -> "online & sailing ⛵"
+                                        }
                                     },
-                                    color = if (uiState.isLoading) (if (isSpidey) Color(0xFF60A5FA) else Color(0xFFF6C445)) else Color.White.copy(alpha = 0.65f),
+                                    color = if (uiState.isLoading) (
+                                        when {
+                                            isSpidey -> Color(0xFF60A5FA)
+                                            isBasic  -> Color(0xFF34D399)
+                                            else     -> Color(0xFFF6C445)
+                                        }
+                                    ) else Color.White.copy(alpha = 0.65f),
                                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
                                 )
                             }
@@ -244,7 +267,7 @@ fun FinanceAIScreen(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = if (isKeyboardOpen) 20.sp else 26.sp
                             ),
-                            color = if (isSpidey) Color(0xFF60A5FA) else Secondary,
+                            color = if (isSpidey) Color(0xFF60A5FA) else if (isBasic) Color(0xFF34D399) else Secondary,
                             textAlign = TextAlign.Center
                         )
                         if (!isKeyboardOpen) {
@@ -276,6 +299,7 @@ fun FinanceAIScreen(
                             ChatBubble(
                                 message = message,
                                 isSpidey = isSpidey,
+                                isBasic = isBasic,
                                 onCopy = {
                                     clipboardManager.setText(AnnotatedString(message.text))
                                     Toast.makeText(context, strings.copiedToast, Toast.LENGTH_SHORT).show()
@@ -300,7 +324,7 @@ fun FinanceAIScreen(
 
                         if (uiState.isLoading) {
                             item {
-                                TypingIndicatorRow(isSpidey = isSpidey)
+                                TypingIndicatorRow(isSpidey = isSpidey, isBasic = isBasic)
                             }
                         }
                     }
@@ -334,7 +358,7 @@ fun FinanceAIScreen(
                     // Theme Styled Input Box
                     Surface(
                         shape = RoundedCornerShape(24.dp),
-                        color = if (isSpidey) Color(0xFF1E1E1E) else Color(0xFF2A3942),
+                        color = if (isSpidey) Color(0xFF1F2C34) else if (isBasic) Color(0xFF111115) else Color(0xFF2A3942),
                         border = BorderStroke(
                             1.dp,
                             if (isSpidey) Color(0xFFC1121F).copy(alpha = 0.35f) else Color(0xFFF6C445).copy(alpha = 0.25f)
@@ -359,7 +383,11 @@ fun FinanceAIScreen(
                                 onValueChange = { inputText = it },
                                 placeholder = {
                                     Text(
-                                        text = if (isSpidey) "Ask Spider-Man..." else "Message Nami...",
+                                        text = when {
+                                    isSpidey -> "Ask Spider-Man..."
+                                    isBasic  -> "Ask FinBot..."
+                                    else     -> "Message Nami..."
+                                },
                                         color = Color.White.copy(alpha = 0.4f),
                                         style = MaterialTheme.typography.bodyMedium
                                     )
@@ -402,10 +430,10 @@ fun FinanceAIScreen(
                     }
 
                     // Theme FAB Send Button
-                    val sendGradient = if (isSpidey) {
-                        listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
-                    } else {
-                        listOf(Color(0xFF1E88E5), Color(0xFF00A884))
+                    val sendGradient = when {
+                        isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
+                        isBasic  -> listOf(Color(0xFF6366F1), Color(0xFF10B981))
+                        else     -> listOf(Color(0xFF1E88E5), Color(0xFF00A884))
                     }
 
                     Box(
@@ -439,6 +467,7 @@ fun FinanceAIScreen(
 fun ChatBubble(
     message: ChatMessage,
     isSpidey: Boolean,
+    isBasic: Boolean = false,
     onCopy: () -> Unit,
     onShare: () -> Unit,
     onRegenerate: () -> Unit,
@@ -451,15 +480,27 @@ fun ChatBubble(
     }
 
     val alignment = if (message.isFromUser) Alignment.CenterEnd else Alignment.CenterStart
-    
+
     val containerColor = if (message.isFromUser) {
-        if (isSpidey) Color(0xFF1D4ED8) else Color(0xFF005C4B)
+        when {
+            isSpidey -> Color(0xFF1D4ED8)
+            isBasic  -> Color(0xFF4338CA) // Deep indigo for user
+            else     -> Color(0xFF005C4B)
+        }
     } else {
-        if (isSpidey) Color(0xFF1C1315) else Color(0xFF202C33)
+        when {
+            isSpidey -> Color(0xFF1C1315)
+            isBasic  -> Color(0xFF1C1C23)
+            else     -> Color(0xFF202C33)
+        }
     }
 
     val borderColor = if (!message.isFromUser) {
-        if (isSpidey) Color(0xFFC1121F).copy(alpha = 0.4f) else Color(0xFFF6C445).copy(alpha = 0.3f)
+        when {
+            isSpidey -> Color(0xFFC1121F).copy(alpha = 0.4f)
+            isBasic  -> Color(0xFF6366F1).copy(alpha = 0.35f)
+            else     -> Color(0xFFF6C445).copy(alpha = 0.3f)
+        }
     } else {
         Color.Transparent
     }
@@ -483,7 +524,7 @@ fun ChatBubble(
             ) {
                 Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
                     Text(
-                        text = parseMarkdown(message.text, isSpidey),
+                        text = parseMarkdown(message.text, isSpidey, isBasic),
                         color = Color.White,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             lineHeight = 20.sp,
@@ -665,7 +706,7 @@ fun SuggestionChip(
 }
 
 @Composable
-fun TypingIndicatorRow(isSpidey: Boolean = false) {
+fun TypingIndicatorRow(isSpidey: Boolean = false, isBasic: Boolean = false) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -677,8 +718,16 @@ fun TypingIndicatorRow(isSpidey: Boolean = false) {
         Spacer(modifier = Modifier.width(8.dp))
         Surface(
             shape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp, bottomStart = 4.dp, bottomEnd = 14.dp),
-            color = if (isSpidey) Color(0xFF1C1315) else Color(0xFF202C33),
-            border = BorderStroke(1.dp, if (isSpidey) Color(0xFFC1121F).copy(alpha = 0.4f) else Color(0xFFF6C445).copy(alpha = 0.3f))
+            color = when {
+                isSpidey -> Color(0xFF1C1315)
+                isBasic  -> Color(0xFF1C1C23)
+                else     -> Color(0xFF202C33)
+            },
+            border = BorderStroke(1.dp, when {
+                isSpidey -> Color(0xFFC1121F).copy(alpha = 0.4f)
+                isBasic  -> Color(0xFF6366F1).copy(alpha = 0.35f)
+                else     -> Color(0xFFF6C445).copy(alpha = 0.3f)
+            })
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -732,9 +781,21 @@ fun TypingIndicatorRow(isSpidey: Boolean = false) {
                     label = "Dot3"
                 )
 
-                Dot(opacity = dot1, color = if (isSpidey) Color(0xFFC1121F) else Secondary)
-                Dot(opacity = dot2, color = if (isSpidey) Color(0xFF1D4ED8) else Secondary)
-                Dot(opacity = dot3, color = if (isSpidey) Color(0xFFF6C445) else Secondary)
+                Dot(opacity = dot1, color = when {
+                    isSpidey -> Color(0xFFC1121F)
+                    isBasic  -> Color(0xFF6366F1)
+                    else     -> Secondary
+                })
+                Dot(opacity = dot2, color = when {
+                    isSpidey -> Color(0xFF1D4ED8)
+                    isBasic  -> Color(0xFF10B981)
+                    else     -> Secondary
+                })
+                Dot(opacity = dot3, color = when {
+                    isSpidey -> Color(0xFFF6C445)
+                    isBasic  -> Color(0xFF818CF8)
+                    else     -> Secondary
+                })
             }
         }
     }
@@ -753,10 +814,10 @@ fun Dot(opacity: Float, color: Color = Secondary) {
 @Composable
 fun NavigatorAvatar(modifier: Modifier = Modifier) {
     val strings = LocalThemeStrings.current
-    if (strings.chatbotName == "Spider-Man") {
-        SpiderManAvatar(modifier = modifier)
-    } else {
-        Canvas(modifier = modifier) {
+    when (strings.chatbotName) {
+        "Spider-Man" -> SpiderManAvatar(modifier = modifier)
+        "FinBot" -> FinBotAvatar(modifier = modifier)
+        else -> Canvas(modifier = modifier) {
             val radius = size.minDimension / 2
             
             // Outer golden rim
@@ -813,12 +874,36 @@ fun NavigatorAvatar(modifier: Modifier = Modifier) {
 }
 
 @Composable
+fun FinBotAvatar(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val radius = size.minDimension / 2
+        val w = size.width
+        val h = size.height
+        // Outer indigo ring
+        drawCircle(color = Color(0xFF6366F1), radius = radius)
+        // Inner dark background
+        drawCircle(color = Color(0xFF09090B), radius = radius * 0.84f)
+        // Emerald inner ring
+        drawCircle(
+            color = Color(0xFF10B981),
+            radius = radius * 0.60f,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3f)
+        )
+        // Indigo cross lines (circuit style)
+        drawLine(color = Color(0xFF6366F1).copy(alpha = 0.6f), start = Offset(w*0.5f, h*0.2f), end = Offset(w*0.5f, h*0.8f), strokeWidth = 2.5f)
+        drawLine(color = Color(0xFF6366F1).copy(alpha = 0.6f), start = Offset(w*0.2f, h*0.5f), end = Offset(w*0.8f, h*0.5f), strokeWidth = 2.5f)
+        // Center emerald dot
+        drawCircle(color = Color(0xFF10B981), radius = radius * 0.14f)
+    }
+}
+
+@Composable
 fun BackgroundWatermark(modifier: Modifier = Modifier) {
     val strings = LocalThemeStrings.current
-    if (strings.chatbotName == "Spider-Man") {
-        SpiderWebWatermark(modifier = modifier)
-    } else {
-        Canvas(modifier = modifier) {
+    when (strings.chatbotName) {
+        "Spider-Man" -> SpiderWebWatermark(modifier = modifier)
+        "FinBot" -> FinBotWatermark(modifier = modifier)
+        else -> Canvas(modifier = modifier) {
             val w = size.width
             val h = size.height
             val radius = size.minDimension * 0.35f
@@ -873,8 +958,47 @@ fun BackgroundWatermark(modifier: Modifier = Modifier) {
     }
 }
 
-private fun parseMarkdown(text: String, isSpidey: Boolean = false): AnnotatedString {
-    val highlightColor = if (isSpidey) Color(0xFFF6C445) else SecondaryLight
+@Composable
+fun FinBotWatermark(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val center = Offset(w * 0.5f, h * 0.45f)
+        val radius = size.minDimension * 0.35f
+        val indigoAlpha = Color(0xFF6366F1).copy(alpha = 0.05f)
+        val emeraldAlpha = Color(0xFF10B981).copy(alpha = 0.04f)
+        // Outer indigo ring
+        drawCircle(
+            color = indigoAlpha,
+            radius = radius,
+            center = center,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(
+                width = 2f,
+                pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(14f, 8f), 0f)
+            )
+        )
+        drawCircle(
+            color = emeraldAlpha,
+            radius = radius * 0.6f,
+            center = center,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5f)
+        )
+        // Grid lines (circuit board feel)
+        drawLine(color = indigoAlpha, start = Offset(center.x, center.y - radius * 1.1f), end = Offset(center.x, center.y + radius * 1.1f), strokeWidth = 2f)
+        drawLine(color = indigoAlpha, start = Offset(center.x - radius * 1.1f, center.y), end = Offset(center.x + radius * 1.1f, center.y), strokeWidth = 2f)
+        drawLine(color = emeraldAlpha, start = Offset(center.x - radius * 0.7f, center.y - radius * 0.7f), end = Offset(center.x + radius * 0.7f, center.y + radius * 0.7f), strokeWidth = 1.5f)
+        drawLine(color = emeraldAlpha, start = Offset(center.x + radius * 0.7f, center.y - radius * 0.7f), end = Offset(center.x - radius * 0.7f, center.y + radius * 0.7f), strokeWidth = 1.5f)
+        // Center dot
+        drawCircle(color = Color(0xFF6366F1).copy(alpha = 0.08f), radius = radius * 0.12f, center = center)
+    }
+}
+
+private fun parseMarkdown(text: String, isSpidey: Boolean = false, isBasic: Boolean = false): AnnotatedString {
+    val highlightColor = when {
+        isSpidey -> Color(0xFFF6C445)
+        isBasic  -> Color(0xFF34D399) // Emerald for FinBot
+        else     -> SecondaryLight
+    }
     val builder = buildAnnotatedString {
         val parts = text.split("**")
         for (i in parts.indices) {

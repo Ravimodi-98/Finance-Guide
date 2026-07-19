@@ -89,3 +89,28 @@ val ChartColors = listOf(
     Color(0xFF6B7280)
 )
 
+// ─────────────────────────────────────────────────────────
+// Finance Pro — Basic Theme Palette
+// Clean modern dark UI: Indigo + Emerald + Near-Black
+// ─────────────────────────────────────────────────────────
+val ProPrimary         = Color(0xFF6366F1) // Indigo-500 (primary accent)
+val ProPrimaryLight    = Color(0xFF818CF8) // Indigo-400
+val ProPrimaryDark     = Color(0xFF4338CA) // Indigo-700
+val ProOnPrimary       = Color(0xFFFFFFFF)
+val ProPrimaryContainer    = Color(0xFF1E1B4B) // Deep Indigo container
+val ProOnPrimaryContainer  = Color(0xFFE0E7FF)
+
+val ProSecondary           = Color(0xFF10B981) // Emerald-500 (income/success)
+val ProSecondaryLight      = Color(0xFF34D399) // Emerald-400
+val ProSecondaryDark       = Color(0xFF059669) // Emerald-600
+val ProOnSecondary         = Color(0xFF0F172A)
+val ProSecondaryContainer  = Color(0xFF064E3B)
+val ProOnSecondaryContainer = Color(0xFFD1FAE5)
+
+val ProBackground      = Color(0xFF09090B) // Near-black
+val ProSurface         = Color(0xFF111115) // Card surface
+val ProSurfaceVariant  = Color(0xFF1C1C23) // Elevated card
+val ProSurfaceElevated = Color(0xFF26262F) // Popups / sheets
+val ProOutline         = Color(0xFF2E2E3A)
+val ProOnSurface       = Color(0xFFF1F5F9)
+val ProOnSurfaceVariant = Color(0xFF94A3B8)

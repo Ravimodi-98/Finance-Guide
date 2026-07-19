@@ -37,9 +37,9 @@ fun OnboardingScreen(
     )
 
     val themes = listOf(
-        ThemeOption("system", "System Default", "Default Device Theme"),
-        ThemeOption("onepiece", "One Piece Theme", "Jolly Roger Style"),
-        ThemeOption("spiderman", "Spider-Man Theme", "Friendly Neighborhood Style")
+        ThemeOption("onepiece", "One Piece", "Jolly Roger · Pirate Crew Style 🏴‍☠️"),
+        ThemeOption("spiderman", "Spider-Man", "Friendly Neighborhood · Web Slinger Style 🕷️"),
+        ThemeOption("basic", "Finance Pro", "Clean · Modern · Professional Dark UI 📊")
     )
 
     Box(
@@ -72,7 +72,11 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = if (selectedTheme == "spiderman") "Suit Up with FinanceGuide!" else "Set Sail with FinanceGuide!",
+                text = when (selectedTheme) {
+                    "spiderman" -> "Suit Up with FinanceGuide!"
+                    "basic" -> "Track Smarter with Finance Pro!"
+                    else -> "Set Sail with FinanceGuide!"
+                },
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
@@ -80,7 +84,11 @@ fun OnboardingScreen(
             )
 
             Text(
-                text = if (selectedTheme == "spiderman") "Choose your web currency and hero interface theme before embarking on your financial journey." else "Choose your bounty currency and theme style before embarking on your financial journey.",
+                text = when (selectedTheme) {
+                    "spiderman" -> "Choose your web currency and hero interface theme before embarking on your financial journey."
+                    "basic" -> "Choose your currency and get a clean, professional finance experience powered by AI."
+                    else -> "Choose your bounty currency and theme style before embarking on your financial journey."
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
@@ -207,7 +215,11 @@ fun OnboardingScreen(
             Button(
                 onClick = { onComplete(selectedCurrency, selectedTheme) },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (selectedTheme == "spiderman") SpideyPrimary else Secondary
+                    containerColor = when (selectedTheme) {
+                        "spiderman" -> SpideyPrimary
+                        "basic" -> Color(0xFF6366F1)
+                        else -> Secondary
+                    }
                 ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
@@ -215,10 +227,14 @@ fun OnboardingScreen(
                     .height(56.dp)
             ) {
                 Text(
-                    text = if (selectedTheme == "spiderman") "SUIT UP! 🕷️" else "SET SAIL! ⛵",
+                    text = when (selectedTheme) {
+                        "spiderman" -> "SUIT UP! 🕷️"
+                        "basic" -> "GET STARTED 🚀"
+                        else -> "SET SAIL! ⛵"
+                    },
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = if (selectedTheme == "spiderman") Color.White else OnSecondary
+                    color = Color.White
                 )
             }
         }

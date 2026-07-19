@@ -34,6 +34,7 @@ import com.example.financeguide.theme.GradientEnd
 import com.example.financeguide.theme.LocalThemeStrings
 import com.example.financeguide.theme.OnePieceStrings
 import com.example.financeguide.theme.SpidermanStrings
+import com.example.financeguide.theme.FinanceProStrings
 import com.example.financeguide.ui.navigation.FinanceNavGraph
 import com.example.financeguide.ui.FinanceViewModel
 import com.example.financeguide.ui.components.LocalCurrency
@@ -62,7 +63,11 @@ class MainActivity : ComponentActivity() {
                 else -> isSystemInDarkTheme()
             }
 
-            val themeStrings = if (themeMode == "spiderman") SpidermanStrings else OnePieceStrings
+            val themeStrings = when (themeMode) {
+                "spiderman" -> SpidermanStrings
+                "basic" -> FinanceProStrings
+                else -> OnePieceStrings
+            }
 
             var showSplash by remember { mutableStateOf(true) }
 
@@ -177,11 +182,19 @@ class MainActivity : ComponentActivity() {
                                         text = "FINANCE GUIDE",
                                         fontSize = 28.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (themeMode == "spiderman") SpideyPrimaryLight else Color(0xFFFFB703),
+                                        color = when (themeMode) {
+                                            "spiderman" -> SpideyPrimaryLight
+                                            "basic" -> Color(0xFF818CF8) // ProPrimaryLight
+                                            else -> Color(0xFFFFB703)
+                                        },
                                         letterSpacing = 4.sp
                                     )
                                     Text(
-                                        text = if (themeMode == "spiderman") "Friendly Neighborhood Ledger 🕷️" else "The Pirate King's Ledger",
+                                        text = when (themeMode) {
+                                            "spiderman" -> "Friendly Neighborhood Ledger 🕷️"
+                                            "basic" -> "Your AI Finance Companion 📊"
+                                            else -> "The Pirate King's Ledger"
+                                        },
                                         fontSize = 14.sp,
                                         color = Color.White.copy(alpha = 0.6f),
                                         letterSpacing = 2.sp,

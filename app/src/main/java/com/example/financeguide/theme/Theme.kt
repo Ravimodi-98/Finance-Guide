@@ -130,6 +130,37 @@ private val SpidermanColorScheme = darkColorScheme(
     surfaceContainerHighest = SpideySurfaceElevated
 )
 
+private val FinanceProColorScheme = darkColorScheme(
+    primary = ProPrimary,               // Indigo-500
+    onPrimary = ProOnPrimary,
+    primaryContainer = ProPrimaryContainer,
+    onPrimaryContainer = ProOnPrimaryContainer,
+    secondary = ProSecondary,           // Emerald-500
+    onSecondary = ProOnSecondary,
+    secondaryContainer = ProSecondaryContainer,
+    onSecondaryContainer = ProOnSecondaryContainer,
+    tertiary = Color(0xFFF59E0B),       // Amber — expense / warning
+    onTertiary = Color(0xFF0F172A),
+    tertiaryContainer = Color(0xFF3B2800),
+    onTertiaryContainer = Color(0xFFFDE68A),
+    error = Color(0xFFEF4444),
+    onError = Color.White,
+    errorContainer = Color(0xFF3B0E0E),
+    onErrorContainer = Color(0xFFFCA5A5),
+    background = ProBackground,
+    onBackground = ProOnSurface,
+    surface = ProSurface,
+    onSurface = ProOnSurface,
+    surfaceVariant = ProSurfaceVariant,
+    onSurfaceVariant = ProOnSurfaceVariant,
+    outline = ProOutline,
+    surfaceContainerLowest = ProBackground,
+    surfaceContainerLow = ProSurface,
+    surfaceContainer = ProSurfaceVariant,
+    surfaceContainerHigh = ProSurfaceElevated,
+    surfaceContainerHighest = ProSurfaceElevated
+)
+
 @Composable
 fun FinanceGuideTheme(
     themeMode: String = "system",
@@ -140,6 +171,7 @@ fun FinanceGuideTheme(
     val colorScheme = when (themeMode) {
         "onepiece" -> OnePieceColorScheme
         "spiderman" -> SpidermanColorScheme
+        "basic" -> FinanceProColorScheme
         "dark" -> OnePieceColorScheme
         "light" -> LightColorScheme
         else -> {
