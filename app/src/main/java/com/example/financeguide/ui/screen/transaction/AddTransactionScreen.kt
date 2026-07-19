@@ -7,8 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -55,7 +53,7 @@ import com.example.financeguide.domain.model.TransactionType
 import com.example.financeguide.theme.LocalThemeStrings
 import com.example.financeguide.ui.FinanceViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
     viewModel: FinanceViewModel,
@@ -237,20 +235,12 @@ fun AddTransactionScreen(
                 Category.expenseCategories()
             }
 
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                availableCategories.forEach { category ->
-                    CreativeCategoryItem(
-                        category = category,
-                        selected = category == selectedCategory,
-                        isSpidey = isSpidey,
-                        onClick = { selectedCategory = category }
-                    )
-                }
-            }
+            CategoryGrid(
+                categories = availableCategories,
+                selectedCategory = selectedCategory,
+                isSpidey = isSpidey,
+                onSelect = { selectedCategory = it }
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -334,63 +324,110 @@ private fun CreativeTypeButton(
 }
 
 @Composable
-private fun CreativeCategoryItem(
+private fun CategoryGrid(
+    categories: List<Category>,
+    selectedCategory: Category,
+    isSpidey: Boolean,
+    onSelect: (Category) -> Unit
+) {
+    // Split into rows of 3
+    val rows = categories.chunked(3)
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        rows.forEach { rowItems ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                rowItems.forEach { category ->
+                    CategoryCard(
+                        category = category,
+                        selected = category == selectedCategory,
+                        isSpidey = isSpidey,
+                        onClick = { onSelect(category) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                // Fill empty slots in last row so items stay equal-width
+                repeat(3 - rowItems.size) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryCard(
     category: Category,
     selected: Boolean,
     isSpidey: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val categoryEmoji = when (category) {
-        Category.FOOD -> if (isSpidey) "🍕" else "🍖"
-        Category.TRANSPORT -> if (isSpidey) "🕸️" else "🚢"
-        Category.BILLS -> if (isSpidey) "📜" else "📜"
+    val emoji = when (category) {
+        Category.FOOD          -> if (isSpidey) "🍕" else "🍖"
+        Category.TRANSPORT     -> if (isSpidey) "🚇" else "🚢"
+        Category.BILLS         -> if (isSpidey) "📜" else "📋"
         Category.ENTERTAINMENT -> if (isSpidey) "🎮" else "🎪"
-        Category.HEALTH -> if (isSpidey) "🧪" else "💊"
-        Category.SHOPPING -> if (isSpidey) "🛍️" else "💎"
-        Category.EDUCATION -> if (isSpidey) "📚" else "📖"
-        Category.GIFTS -> if (isSpidey) "🎁" else "🎁"
-        Category.OTHER -> if (isSpidey) "🧭" else "🧭"
-        Category.SALARY -> if (isSpidey) "💼" else "💰"
-        Category.INVESTMENT -> if (isSpidey) "📈" else "📊"
-        Category.FREELANCE -> if (isSpidey) "🤝" else "📜"
-        Category.BUSINESS -> if (isSpidey) "🏪" else "🪙"
-        Category.BONUS -> if (isSpidey) "🏆" else "🏆"
-        Category.INTEREST -> if (isSpidey) "🏦" else "⚓"
-        Category.OTHER_INCOME -> if (isSpidey) "💵" else "💎"
+        Category.HEALTH        -> if (isSpidey) "🧪" else "💊"
+        Category.SHOPPING      -> if (isSpidey) "🛍️" else "💎"
+        Category.EDUCATION     -> if (isSpidey) "📚" else "📖"
+        Category.GIFTS         -> if (isSpidey) "🎁" else "🎁"
+        Category.OTHER         -> if (isSpidey) "🧭" else "🧭"
+        Category.SALARY        -> if (isSpidey) "💼" else "💰"
+        Category.INVESTMENT    -> if (isSpidey) "📈" else "📊"
+        Category.FREELANCE     -> if (isSpidey) "🤝" else "📜"
+        Category.BUSINESS      -> if (isSpidey) "🏪" else "🪙"
+        Category.BONUS         -> if (isSpidey) "🏆" else "🏆"
+        Category.INTEREST      -> if (isSpidey) "🏦" else "⚓"
+        Category.OTHER_INCOME  -> if (isSpidey) "💵" else "💎"
     }
 
-    val selectedColor = if (isSpidey) Color(0xFFC1121F) else Color(0xFFF6C445)
+    val accentColor = if (isSpidey) Color(0xFFC1121F) else Color(0xFFF6C445)
+    val categoryColor = category.color
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .padding(4.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(60.dp)
-                .clip(CircleShape)
-                .background(
-                    if (selected) selectedColor.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant
-                )
-                .border(
-                    border = BorderStroke(
-                        width = if (selected) 2.dp else 1.dp,
-                        color = if (selected) selectedColor else Color.White.copy(alpha = 0.08f)
-                    ),
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = categoryEmoji, fontSize = 24.sp)
-        }
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = category.displayName,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-            color = if (selected) selectedColor else MaterialTheme.colorScheme.onSurfaceVariant
+    Surface(
+        modifier = modifier
+            .height(80.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        color = if (selected)
+            categoryColor.copy(alpha = 0.18f)
+        else
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+        border = BorderStroke(
+            width = if (selected) 1.5.dp else 1.dp,
+            color = if (selected) categoryColor else Color.White.copy(alpha = 0.07f)
         )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(categoryColor.copy(alpha = if (selected) 0.30f else 0.13f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = emoji, fontSize = 18.sp)
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = category.displayName,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                    fontSize = 10.sp
+                ),
+                color = if (selected) categoryColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
     }
 }
