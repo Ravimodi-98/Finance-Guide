@@ -52,6 +52,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.financeguide.data.local.entity.BudgetEntity
 import com.example.financeguide.domain.model.BudgetStatus
@@ -74,6 +79,7 @@ fun BudgetScreen(
     var animIndex = 0
     val strings = LocalThemeStrings.current
     val isSpidey = strings.chatbotName == "Spider-Man"
+    val isBasic = strings.chatbotName == "FinBot"
 
     val accentGold = Color(0xFFF6C445)
     val accentOcean = Color(0xFF1E88E5)
@@ -141,34 +147,30 @@ fun BudgetScreen(
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                         border = BorderStroke(
                             1.dp,
-                            if (isSpidey) Color(0xFF1D4ED8).copy(alpha = 0.4f) else accentGold.copy(alpha = 0.4f)
+                            when {
+                                isSpidey -> Color(0xFF1D4ED8).copy(alpha = 0.4f)
+                                isBasic  -> Color(0xFF6366F1).copy(alpha = 0.4f)
+                                else     -> accentGold.copy(alpha = 0.4f)
+                            }
                         )
                     ) {
                         Column(
                             modifier = Modifier.padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(72.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (isSpidey) Color(0xFFC1121F).copy(alpha = 0.15f) else accentGold.copy(alpha = 0.15f)
-                                    )
-                                    .border(
-                                        border = BorderStroke(
-                                            2.dp,
-                                            if (isSpidey) Color(0xFFC1121F) else accentGold
-                                        ),
-                                        shape = CircleShape
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = if (isSpidey) "🛡️" else "💎",
-                                    fontSize = 36.sp
-                                )
-                            }
+                            BudgetEmptyIcon(
+                                accentColor = when {
+                                    isSpidey -> Color(0xFFC1121F)
+                                    isBasic  -> Color(0xFF6366F1)
+                                    else     -> accentGold
+                                },
+                                secondaryColor = when {
+                                    isSpidey -> Color(0xFF1D4ED8)
+                                    isBasic  -> Color(0xFF10B981)
+                                    else     -> accentOcean
+                                },
+                                modifier = Modifier.size(80.dp)
+                            )
 
                             Spacer(modifier = Modifier.height(16.dp))
 
@@ -189,10 +191,10 @@ fun BudgetScreen(
 
                             Spacer(modifier = Modifier.height(20.dp))
 
-                            val ctaGradient = if (isSpidey) {
-                                listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
-                            } else {
-                                listOf(accentOcean, accentGold)
+                            val ctaGradient = when {
+                                isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
+                                isBasic  -> listOf(Color(0xFF6366F1), Color(0xFF10B981))
+                                else     -> listOf(accentOcean, accentGold)
                             }
 
                             Box(
@@ -205,7 +207,11 @@ fun BudgetScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = if (isSpidey) "+ SET FIRST HERO BUDGET 🕸️" else "+ SET FIRST BOUNTY LIMIT 📜",
+                                    text = when {
+                                        isSpidey -> "+ SET FIRST HERO BUDGET 🕸️"
+                                        isBasic  -> "+ CREATE BUDGET PLAN 📊"
+                                        else     -> "+ SET FIRST BOUNTY LIMIT 📜"
+                                    },
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                     color = Color.White
                                 )
@@ -511,4 +517,71 @@ fun ConfirmDeleteBudgetDialog(
             }
         }
     )
+}
+
+@Composable
+fun BudgetEmptyIcon(
+    accentColor: Color,
+    secondaryColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+        val outerR = size.minDimension / 2f
+        val strokeW = outerR * 0.13f
+        val arcR = outerR - strokeW / 2f
+        val arcSize = Size(arcR * 2f, arcR * 2f)
+        val arcOffset = Offset(cx - arcR, cy - arcR)
+
+        // Outer dark background circle
+        drawCircle(
+            color = accentColor.copy(alpha = 0.12f),
+            radius = outerR
+        )
+
+        // Outer accent ring
+        drawCircle(
+            color = accentColor,
+            radius = outerR,
+            style = Stroke(width = strokeW * 0.6f)
+        )
+
+        // Pie slices representing budget categories (donut chart style)
+        val slices = listOf(
+            Triple(accentColor,     -90f,  120f),  // Largest slice
+            Triple(secondaryColor,   30f,   90f),  // Medium slice
+            Triple(accentColor.copy(alpha = 0.45f), 120f, 80f),  // Small slice
+            Triple(secondaryColor.copy(alpha = 0.30f), 200f, 60f) // Tiny slice
+        )
+        slices.forEach { (color, start, sweep) ->
+            drawArc(
+                color = color,
+                startAngle = start,
+                sweepAngle = sweep,
+                useCenter = false,
+                topLeft = arcOffset,
+                size = arcSize,
+                style = Stroke(width = strokeW, cap = StrokeCap.Butt)
+            )
+        }
+
+        // Inner white circle (donut hole)
+        val innerR = arcR - strokeW
+        drawCircle(
+            color = accentColor.copy(alpha = 0.08f),
+            radius = innerR
+        )
+
+        // Center currency symbol circle
+        drawCircle(
+            color = secondaryColor,
+            radius = innerR * 0.38f
+        )
+        drawCircle(
+            color = accentColor.copy(alpha = 0.4f),
+            radius = innerR * 0.38f,
+            style = Stroke(width = 2f)
+        )
+    }
 }
