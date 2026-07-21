@@ -1,58 +1,64 @@
 package com.example.financeguide.di
 
 import android.content.Context
+import com.example.financeguide.data.local.AuthDataStore
 import com.example.financeguide.data.local.FinanceDatabase
+import com.example.financeguide.data.local.SettingsManager
+import com.example.financeguide.data.remote.CollaborativeApiService
+import com.example.financeguide.data.remote.FinanceApiService
+import com.example.financeguide.data.remote.SocketManager
+import com.example.financeguide.data.repository.AuthRepository
+import com.example.financeguide.data.repository.CollaborativeRepository
+import com.example.financeguide.data.repository.FinanceAIRepositoryImpl
 import com.example.financeguide.data.repository.FinanceRepository
+import com.example.financeguide.domain.repository.FinanceAIRepository
+import com.example.financeguide.domain.usecase.AskFinanceQuestionUseCase
 import com.example.financeguide.domain.usecase.GenerateSuggestionsUseCase
 import com.example.financeguide.domain.usecase.GetBudgetStatusUseCase
 import com.example.financeguide.domain.usecase.GetMonthlySummaryUseCase
 import com.example.financeguide.ui.FinanceViewModelFactory
-
+import com.example.financeguide.ui.screen.ai.FinanceAIViewModelFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import com.example.financeguide.data.remote.FinanceApiService
-import com.example.financeguide.data.repository.FinanceAIRepositoryImpl
-import com.example.financeguide.domain.repository.FinanceAIRepository
-import com.example.financeguide.domain.usecase.AskFinanceQuestionUseCase
-import com.example.financeguide.ui.screen.ai.FinanceAIViewModelFactory
 import java.util.concurrent.TimeUnit
 
-
 /**
- * Manual Dependency Injection container for the MVP.
+ * Manual Dependency Injection container.
  */
 class AppContainer(private val context: Context) {
 
-    private val database: FinanceDatabase by lazy {
+    val database: FinanceDatabase by lazy {
         FinanceDatabase.getInstance(context)
     }
 
-    private val financeRepository: FinanceRepository by lazy {
+    val authDataStore: AuthDataStore by lazy {
+        AuthDataStore(context)
+    }
+
+    val financeRepository: FinanceRepository by lazy {
         FinanceRepository(
             transactionDao = database.transactionDao(),
             budgetDao = database.budgetDao()
         )
     }
 
-    private val getMonthlySummaryUseCase: GetMonthlySummaryUseCase by lazy {
+    val getMonthlySummaryUseCase: GetMonthlySummaryUseCase by lazy {
         GetMonthlySummaryUseCase(financeRepository)
     }
 
-    private val getBudgetStatusUseCase: GetBudgetStatusUseCase by lazy {
+    val getBudgetStatusUseCase: GetBudgetStatusUseCase by lazy {
         GetBudgetStatusUseCase(financeRepository)
     }
 
-    private val generateSuggestionsUseCase: GenerateSuggestionsUseCase by lazy {
+    val generateSuggestionsUseCase: GenerateSuggestionsUseCase by lazy {
         GenerateSuggestionsUseCase()
     }
 
-    val settingsManager: com.example.financeguide.data.local.SettingsManager by lazy {
-        com.example.financeguide.data.local.SettingsManager(context)
+    val settingsManager: SettingsManager by lazy {
+        SettingsManager(context)
     }
-
-    // --- Gemini AI Remote Network Container ---
 
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
@@ -66,18 +72,20 @@ class AppContainer(private val context: Context) {
             .build()
     }
 
-    private val aiRetrofit: Retrofit by lazy {
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            // Default address. Set to http://127.0.0.1:3000/ for physical phone USB debugging (via adb reverse)
-            // Or set to http://10.0.2.2:3000/ for Android emulator local loopback
-            .baseUrl("https://backend-blond-eight-79.vercel.app/")
+            .baseUrl("http://10.0.2.2:3000/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
     val financeApiService: FinanceApiService by lazy {
-        aiRetrofit.create(FinanceApiService::class.java)
+        retrofit.create(FinanceApiService::class.java)
+    }
+
+    val collaborativeApiService: CollaborativeApiService by lazy {
+        retrofit.create(CollaborativeApiService::class.java)
     }
 
     val financeAIRepository: FinanceAIRepository by lazy {
@@ -88,7 +96,21 @@ class AppContainer(private val context: Context) {
         AskFinanceQuestionUseCase(financeAIRepository)
     }
 
-    // --- Factories ---
+    val authRepository: AuthRepository by lazy {
+        AuthRepository(collaborativeApiService, authDataStore)
+    }
+
+    val collaborativeRepository: CollaborativeRepository by lazy {
+        CollaborativeRepository(
+            apiService = collaborativeApiService,
+            collaborativeDao = database.collaborativeDao(),
+            pendingSyncDao = database.pendingSyncDao()
+        )
+    }
+
+    val socketManager: SocketManager by lazy {
+        SocketManager()
+    }
 
     val financeViewModelFactory: FinanceViewModelFactory by lazy {
         FinanceViewModelFactory(

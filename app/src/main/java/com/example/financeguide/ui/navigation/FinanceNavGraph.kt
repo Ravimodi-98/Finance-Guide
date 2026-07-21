@@ -3,6 +3,7 @@ package com.example.financeguide.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -14,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.financeguide.domain.model.TransactionType
+import com.example.financeguide.theme.AppTheme
 import com.example.financeguide.ui.FinanceViewModel
 import com.example.financeguide.ui.screen.budget.BudgetScreen
 import com.example.financeguide.ui.screen.dashboard.DashboardScreen
@@ -22,6 +24,7 @@ import com.example.financeguide.ui.screen.settings.SettingsScreen
 import com.example.financeguide.ui.screen.transaction.AddTransactionScreen
 import com.example.financeguide.ui.screen.ai.FinanceAIScreen
 import com.example.financeguide.ui.screen.ai.FinanceAIViewModel
+import com.example.financeguide.ui.screen.collaborative.*
 
 @Composable
 fun FinanceNavGraph(
@@ -31,13 +34,16 @@ fun FinanceNavGraph(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: TopLevelDestination.DASHBOARD.route
+
+    val currentThemeRaw by appContainer.settingsManager.theme.collectAsState()
+    val currentTheme = AppTheme.fromString(currentThemeRaw)
     
     val currentDestination = TopLevelDestination.entries.find { it.route == currentRoute } 
         ?: TopLevelDestination.DASHBOARD
 
     Scaffold(
         bottomBar = {
-            if (currentRoute != "finance_ai" && !currentRoute.startsWith("add_transaction")) {
+            if (currentRoute != "finance_ai" && !currentRoute.startsWith("add_transaction") && !currentRoute.startsWith("auth")) {
                 BottomNavBar(
                     currentDestination = currentDestination,
                     onNavigateToDestination = { destination ->
@@ -64,31 +70,92 @@ fun FinanceNavGraph(
             startDestination = TopLevelDestination.DASHBOARD.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable("auth") {
+                AuthScreen(
+                    authRepository = appContainer.authRepository,
+                    currentTheme = currentTheme,
+                    onAuthSuccess = { navController.navigate(TopLevelDestination.GROUPS.route) }
+                )
+            }
             composable(TopLevelDestination.DASHBOARD.route) {
                 DashboardScreen(
                     viewModel = viewModel,
-                    onAddIncome = {
-                        navController.navigate("add_transaction/INCOME")
-                    },
-                    onAddExpense = {
-                        navController.navigate("add_transaction/EXPENSE")
-                    },
-                    onNavigateToAI = {
-                        navController.navigate("finance_ai")
+                    onAddIncome = { navController.navigate("add_transaction/INCOME") },
+                    onAddExpense = { navController.navigate("add_transaction/EXPENSE") },
+                    onNavigateToAI = { navController.navigate("finance_ai") }
+                )
+            }
+            composable(TopLevelDestination.GROUPS.route) {
+                GroupsScreen(
+                    repository = appContainer.collaborativeRepository,
+                    currentTheme = currentTheme,
+                    onGroupClick = { groupId -> navController.navigate("group_detail/$groupId") },
+                    onCreateGroupClick = {
+                        navController.navigate("group_detail/new")
                     }
+                )
+            }
+            composable(
+                route = "group_detail/{groupId}",
+                arguments = listOf(navArgument("groupId") { type = NavType.StringType })
+            ) { entry ->
+                val groupId = entry.arguments?.getString("groupId") ?: ""
+                GroupDetailScreen(
+                    groupId = groupId,
+                    repository = appContainer.collaborativeRepository,
+                    currentTheme = currentTheme,
+                    onBackClick = { navController.navigateUp() },
+                    onAddExpenseClick = { gId -> navController.navigate("add_collaborative_expense/$gId") },
+                    onSettleClick = { payeeId, payeeName, amount ->
+                        navController.navigate("settlement/$groupId/$payeeId/$payeeName/$amount")
+                    }
+                )
+            }
+            composable(
+                route = "add_collaborative_expense/{groupId}",
+                arguments = listOf(navArgument("groupId") { type = NavType.StringType })
+            ) { entry ->
+                val groupId = entry.arguments?.getString("groupId") ?: ""
+                AddCollaborativeExpenseScreen(
+                    groupId = groupId,
+                    repository = appContainer.collaborativeRepository,
+                    onBackClick = { navController.navigateUp() },
+                    onExpenseAdded = { navController.navigateUp() }
+                )
+            }
+            composable(
+                route = "settlement/{groupId}/{payeeId}/{payeeName}/{amount}",
+                arguments = listOf(
+                    navArgument("groupId") { type = NavType.StringType },
+                    navArgument("payeeId") { type = NavType.StringType },
+                    navArgument("payeeName") { type = NavType.StringType },
+                    navArgument("amount") { type = NavType.FloatType }
+                )
+            ) { entry ->
+                val groupId = entry.arguments?.getString("groupId")
+                val payeeId = entry.arguments?.getString("payeeId") ?: ""
+                val payeeName = entry.arguments?.getString("payeeName") ?: ""
+                val amount = entry.arguments?.getFloat("amount")?.toDouble() ?: 0.0
+
+                SettlementScreen(
+                    groupId = groupId,
+                    payeeId = payeeId,
+                    payeeName = payeeName,
+                    initialAmount = amount,
+                    repository = appContainer.collaborativeRepository,
+                    onBackClick = { navController.navigateUp() },
+                    onSettled = { navController.navigateUp() }
                 )
             }
             composable(TopLevelDestination.BUDGETS.route) {
                 BudgetScreen(viewModel = viewModel)
             }
-            // Default add_transaction route (from bottom nav, defaults to EXPENSE)
             composable(TopLevelDestination.ADD_TRANSACTION.route) {
                 AddTransactionScreen(
                     viewModel = viewModel,
                     onBack = { navController.navigateUp() }
                 )
             }
-            // Add transaction with pre-selected type (from BalanceCard arrows)
             composable(
                 route = "add_transaction/{type}",
                 arguments = listOf(navArgument("type") { type = NavType.StringType })
