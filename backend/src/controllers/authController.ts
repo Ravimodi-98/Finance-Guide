@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { UserStore } from '../services/userService';
 import { sendVerificationEmail } from '../services/emailService';
+import { supabase } from '../services/supabaseService';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 
 // Helper to generate secure random 6-digit code
@@ -23,22 +24,37 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const existing = UserStore.findByEmail(cleanEmail);
 
-    if (existing) {
-      if (!existing.isVerified) {
-        // If account exists but is not verified, trigger a resend and prompt for verification
+    // 1. Create/Register user directly in Supabase Auth (Appears in Supabase Dashboard!)
+    const { data: supabaseData, error: supabaseError } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password: password,
+      options: {
+        data: {
+          name: name.trim(),
+          avatar: 'Luffy'
+        }
+      }
+    });
+
+    if (supabaseError) {
+      // Handle existing user in Supabase
+      if (supabaseError.message.includes('already registered') || supabaseError.message.includes('User already exists')) {
+        const existingLocal = UserStore.findByEmail(cleanEmail);
+        if (existingLocal && !existingLocal.isVerified) {
+          return res.status(400).json({
+            success: false,
+            error: 'EMAIL_NOT_VERIFIED',
+            message: 'An account with this email exists but is not verified. Please verify your email.'
+          });
+        }
         return res.status(400).json({
           success: false,
-          error: 'EMAIL_NOT_VERIFIED',
-          message: 'An account with this email exists but is not verified. Please verify your email.'
+          error: 'EMAIL_IN_USE',
+          message: 'An account with this email is already registered in Supabase.'
         });
       }
-      return res.status(400).json({
-        success: false,
-        error: 'EMAIL_IN_USE',
-        message: 'An account with this email already exists.'
-      });
+      console.warn('Supabase SignUp warning:', supabaseError.message);
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -46,8 +62,10 @@ export const register = async (req: Request, res: Response) => {
     const verificationCodeHash = await bcrypt.hash(code, 10);
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    const newUser = UserStore.save({
-      id: `usr_${Date.now()}_${crypto.randomInt(1000, 9999)}`,
+    const userId = supabaseData?.user?.id || `usr_${Date.now()}_${crypto.randomInt(1000, 9999)}`;
+
+    UserStore.save({
+      id: userId,
       email: cleanEmail,
       passwordHash,
       name: name.trim(),
@@ -59,7 +77,7 @@ export const register = async (req: Request, res: Response) => {
       createdAt: new Date().toISOString()
     });
 
-    // Send email using Resend
+    // 2. Send 6-digit verification email using Resend API
     await sendVerificationEmail(cleanEmail, code);
 
     return res.status(201).json({
@@ -93,7 +111,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
     const user = UserStore.findByEmail(cleanEmail);
 
     if (!user) {
-      return res.status(444).json({
+      return res.status(404).json({
         success: false,
         error: 'USER_NOT_FOUND',
         message: 'User account not found.'
@@ -107,7 +125,6 @@ export const verifyEmail = async (req: Request, res: Response) => {
       });
     }
 
-    // Check attempt limit
     if (user.verificationAttempts >= 5) {
       return res.status(400).json({
         success: false,
@@ -116,7 +133,6 @@ export const verifyEmail = async (req: Request, res: Response) => {
       });
     }
 
-    // Check code expiration
     if (!user.verificationCodeExpiresAt || Date.now() > user.verificationCodeExpiresAt) {
       return res.status(400).json({
         success: false,
@@ -125,7 +141,6 @@ export const verifyEmail = async (req: Request, res: Response) => {
       });
     }
 
-    // Verify code match
     const isValid = user.verificationCodeHash ? await bcrypt.compare(code, user.verificationCodeHash) : false;
 
     if (!isValid) {
@@ -138,14 +153,22 @@ export const verifyEmail = async (req: Request, res: Response) => {
       });
     }
 
-    // Success: mark as verified and clear code fields
+    // Mark verified in local store
     user.isVerified = true;
     delete user.verificationCodeHash;
     delete user.verificationCodeExpiresAt;
     user.verificationAttempts = 0;
     UserStore.save(user);
 
-    // Generate JWT tokens
+    // Update metadata in Supabase
+    try {
+      await supabase.auth.updateUser({
+        data: { is_verified: true }
+      });
+    } catch (e) {
+      // Ignore background metadata update error
+    }
+
     const accessToken = generateAccessToken({ userId: user.id, email: user.email });
     const refreshToken = generateRefreshToken({ userId: user.id, email: user.email });
 
@@ -184,28 +207,46 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = UserStore.findByEmail(cleanEmail);
 
-    if (!user) {
+    // 1. Authenticate against Supabase Auth (Verifies user in Supabase Dashboard!)
+    const { data: supabaseAuthData, error: supabaseError } = await supabase.auth.signInWithPassword({
+      email: cleanEmail,
+      password: password
+    });
+
+    let user = UserStore.findByEmail(cleanEmail);
+
+    if (supabaseError && !user) {
       return res.status(401).json({
         success: false,
         error: 'INVALID_CREDENTIALS',
-        message: 'Invalid email or password.'
+        message: supabaseError.message || 'Invalid email or password.'
       });
     }
 
-    // Check password first
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        error: 'INVALID_CREDENTIALS',
-        message: 'Invalid email or password.'
+    if (user) {
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isPasswordValid && supabaseError) {
+        return res.status(401).json({
+          success: false,
+          error: 'INVALID_CREDENTIALS',
+          message: 'Invalid email or password.'
+        });
+      }
+    } else if (supabaseAuthData?.user) {
+      // Sync user from Supabase if registered externally
+      user = UserStore.save({
+        id: supabaseAuthData.user.id,
+        email: cleanEmail,
+        passwordHash: await bcrypt.hash(password, 10),
+        name: supabaseAuthData.user.user_metadata?.name || cleanEmail.substringBefore('@'),
+        isVerified: true,
+        verificationAttempts: 0,
+        createdAt: supabaseAuthData.user.created_at || new Date().toISOString()
       });
     }
 
-    // Then check if email is verified
-    if (!user.isVerified) {
+    if (user && !user.isVerified) {
       return res.status(403).json({
         success: false,
         error: 'EMAIL_NOT_VERIFIED',
@@ -213,18 +254,17 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    // Only verified users receive JWT tokens
-    const accessToken = generateAccessToken({ userId: user.id, email: user.email });
-    const refreshToken = generateRefreshToken({ userId: user.id, email: user.email });
+    const accessToken = supabaseAuthData?.session?.access_token || generateAccessToken({ userId: user!.id, email: user!.email });
+    const refreshToken = supabaseAuthData?.session?.refresh_token || generateRefreshToken({ userId: user!.id, email: user!.email });
 
     return res.status(200).json({
       success: true,
       accessToken,
       refreshToken,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+        id: user?.id || supabaseAuthData?.user?.id,
+        email: cleanEmail,
+        name: user?.name || supabaseAuthData?.user?.user_metadata?.name || cleanEmail,
         isVerified: true
       }
     });
@@ -268,7 +308,6 @@ export const resendVerification = async (req: Request, res: Response) => {
       });
     }
 
-    // Enforce 60-second rate limit
     const now = Date.now();
     if (user.lastResendAt && now - user.lastResendAt < 60000) {
       const remainingSecs = Math.ceil((60000 - (now - user.lastResendAt)) / 1000);
@@ -280,7 +319,6 @@ export const resendVerification = async (req: Request, res: Response) => {
       });
     }
 
-    // Generate new code & extend expiry by 10 min
     const code = generateSecure6DigitCode();
     const verificationCodeHash = await bcrypt.hash(code, 10);
     const expiresAt = now + 10 * 60 * 1000;
@@ -291,7 +329,6 @@ export const resendVerification = async (req: Request, res: Response) => {
     user.lastResendAt = now;
     UserStore.save(user);
 
-    // Send email using Resend
     await sendVerificationEmail(cleanEmail, code);
 
     return res.status(200).json({
