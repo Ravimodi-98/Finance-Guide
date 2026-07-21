@@ -3,6 +3,7 @@ package com.example.financeguide.ui.screen.auth
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,8 +20,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -31,9 +35,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.financeguide.data.repository.AuthRepository
 import com.example.financeguide.data.repository.AuthResult
-import com.example.financeguide.theme.*
-import com.example.financeguide.ui.components.ThemeAppLogo
 import kotlinx.coroutines.launch
+
+private val BrandIndigo = Color(0xFF6366F1)
+private val BrandEmerald = Color(0xFF10B981)
+private val SurfaceDark = Color(0xFF0F172A)
+private val CardDark = Color(0xFF1E293B)
+private val InputBorderDark = Color(0xFF334155)
+
+data class AvatarOption(val name: String, val emoji: String, val themeColor: Color)
 
 @Composable
 fun LoginScreen(
@@ -43,7 +53,6 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val strings = LocalThemeStrings.current
 
     var isSignUpMode by remember { mutableStateOf(true) }
     var isLoading by remember { mutableStateOf(false) }
@@ -57,48 +66,15 @@ fun LoginScreen(
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
-    val isSpideyTheme = strings.chatbotName == "Spider-Man"
-    val isBasicTheme = strings.chatbotName == "FinBot"
+    var selectedAvatar by remember { mutableStateOf("Investor") }
 
-    val activeThemeMode = when {
-        isSpideyTheme -> "spiderman"
-        isBasicTheme  -> "basic"
-        else          -> "onepiece"
-    }
-
-    var selectedAvatar by remember {
-        mutableStateOf(
-            when {
-                isSpideyTheme -> "Spidey"
-                isBasicTheme  -> "Investor"
-                else          -> "Luffy"
-            }
-        )
-    }
-
-    val avatars = when {
-        isSpideyTheme -> listOf(
-            AvatarOption("Spidey", "🕷️", SpideyPrimary),
-            AvatarOption("Miles", "⚡", Color(0xFFFF1744)),
-            AvatarOption("Gwen", "🕸️", Color(0xFFF48FB1)),
-            AvatarOption("Peter", "📷", SpideySecondary),
-            AvatarOption("MJ", "💖", Color(0xFFE91E63))
-        )
-        isBasicTheme -> listOf(
-            AvatarOption("Investor", "💼", Color(0xFF00E599)),
-            AvatarOption("Trader", "📈", Color(0xFF00D2FF)),
-            AvatarOption("Analyst", "📊", Color(0xFF8B5CF6)),
-            AvatarOption("Planner", "🏛️", Color(0xFFFFC72C)),
-            AvatarOption("Executive", "💎", Color(0xFF38BDF8))
-        )
-        else -> listOf(
-            AvatarOption("Luffy", "🍖", Primary),
-            AvatarOption("Zoro", "⚔️", IncomeGreen),
-            AvatarOption("Nami", "🍊", Secondary),
-            AvatarOption("Sanji", "🍳", Color(0xFF3B82F6)),
-            AvatarOption("Chopper", "🌸", Color(0xFFEC4899))
-        )
-    }
+    val avatarOptions = listOf(
+        AvatarOption("Investor", "💼", Color(0xFF10B981)),
+        AvatarOption("Trader", "📈", Color(0xFF06B6D4)),
+        AvatarOption("Analyst", "📊", Color(0xFF6366F1)),
+        AvatarOption("Planner", "🏛️", Color(0xFFF59E0B)),
+        AvatarOption("Executive", "💎", Color(0xFF38BDF8))
+    )
 
     Box(
         modifier = Modifier
@@ -106,9 +82,9 @@ fun LoginScreen(
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF0C0E14),
-                        Color(0xFF161B26),
-                        Color(0xFF0C0E14)
+                        SurfaceDark,
+                        Color(0xFF1E293B),
+                        SurfaceDark
                     )
                 )
             ),
@@ -123,39 +99,36 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            ThemeAppLogo(
-                themeMode = activeThemeMode,
+            // Professional Fintech Logo Badge
+            ProfessionalLogo(
                 modifier = Modifier
-                    .size(110.dp)
-                    .padding(bottom = 8.dp)
+                    .size(90.dp)
+                    .padding(bottom = 12.dp)
             )
 
             Text(
-                text = if (isSignUpMode) (
-                    when {
-                        isSpideyTheme -> "Suit Up with Hero Account"
-                        isBasicTheme  -> "Create Finance Pro Account"
-                        else          -> "Join the Crew"
-                    }
-                ) else strings.signIn,
-                style = MaterialTheme.typography.headlineLarge,
+                text = if (isSignUpMode) "Create Your Account" else "Welcome Back",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 26.sp
+                ),
                 color = Color.White,
-                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
 
             Text(
                 text = if (isSignUpMode) 
-                    "Create your account to receive a 6-digit email verification code." 
-                    else strings.signInSubtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.6f),
+                    "Register to receive a 6-digit email verification code & access smart AI finance tools." 
+                    else "Sign in to access your financial portfolio, budgets, and AI assistant.",
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                color = Color.White.copy(alpha = 0.65f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
+            // Name Field (Sign Up mode)
             if (isSignUpMode) {
                 OutlinedTextField(
                     value = name,
@@ -163,17 +136,20 @@ fun LoginScreen(
                         name = it
                         nameError = null
                     },
-                    label = { Text("Name") },
-                    leadingIcon = { Icon(Icons.Rounded.Person, contentDescription = null, tint = Secondary) },
+                    label = { Text("Full Name") },
+                    leadingIcon = { Icon(Icons.Rounded.Person, contentDescription = null, tint = BrandIndigo) },
                     isError = nameError != null,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Secondary,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
-                        focusedLabelColor = Secondary,
-                        unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
-                    )
+                        focusedBorderColor = BrandIndigo,
+                        unfocusedBorderColor = InputBorderDark,
+                        focusedLabelColor = BrandIndigo,
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
+                        focusedContainerColor = CardDark,
+                        unfocusedContainerColor = CardDark
+                    ),
+                    shape = RoundedCornerShape(14.dp)
                 )
                 AnimatedVisibility(visible = nameError != null) {
                     Text(
@@ -186,6 +162,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
+            // Email Field
             OutlinedTextField(
                 value = email,
                 onValueChange = {
@@ -193,17 +170,20 @@ fun LoginScreen(
                     emailError = null
                 },
                 label = { Text("Email Address") },
-                leadingIcon = { Icon(Icons.Rounded.Email, contentDescription = null, tint = Secondary) },
+                leadingIcon = { Icon(Icons.Rounded.Email, contentDescription = null, tint = BrandIndigo) },
                 isError = emailError != null,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Secondary,
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
-                    focusedLabelColor = Secondary,
-                    unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
-                )
+                    focusedBorderColor = BrandIndigo,
+                    unfocusedBorderColor = InputBorderDark,
+                    focusedLabelColor = BrandIndigo,
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
+                    focusedContainerColor = CardDark,
+                    unfocusedContainerColor = CardDark
+                ),
+                shape = RoundedCornerShape(14.dp)
             )
             AnimatedVisibility(visible = emailError != null) {
                 Text(
@@ -216,6 +196,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Password Field
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -223,7 +204,7 @@ fun LoginScreen(
                     passwordError = null
                 },
                 label = { Text("Password") },
-                leadingIcon = { Icon(Icons.Rounded.Lock, contentDescription = null, tint = Secondary) },
+                leadingIcon = { Icon(Icons.Rounded.Lock, contentDescription = null, tint = BrandIndigo) },
                 trailingIcon = {
                     IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                         Icon(
@@ -239,11 +220,14 @@ fun LoginScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Secondary,
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
-                    focusedLabelColor = Secondary,
-                    unfocusedLabelColor = Color.White.copy(alpha = 0.5f)
-                )
+                    focusedBorderColor = BrandIndigo,
+                    unfocusedBorderColor = InputBorderDark,
+                    focusedLabelColor = BrandIndigo,
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
+                    focusedContainerColor = CardDark,
+                    unfocusedContainerColor = CardDark
+                ),
+                shape = RoundedCornerShape(14.dp)
             )
             AnimatedVisibility(visible = passwordError != null) {
                 Text(
@@ -254,23 +238,23 @@ fun LoginScreen(
                 )
             }
 
+            // Professional Profile Identity Selection (Sign Up mode)
             if (isSignUpMode) {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = "Choose Identity",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Secondary,
-                    fontWeight = FontWeight.Bold,
+                    text = "Select Investor Role",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = BrandIndigo,
                     modifier = Modifier.align(Alignment.Start)
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    avatars.forEach { option ->
+                    avatarOptions.forEach { option ->
                         val isSelected = selectedAvatar == option.name
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -280,19 +264,19 @@ fun LoginScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(56.dp)
+                                    .size(52.dp)
                                     .clip(CircleShape)
-                                    .background(if (isSelected) option.themeColor.copy(alpha = 0.25f) else SurfaceDarkVariant)
+                                    .background(if (isSelected) option.themeColor.copy(alpha = 0.2f) else CardDark)
                                     .border(
                                         border = BorderStroke(
-                                            width = if (isSelected) 3.dp else 1.dp,
-                                            color = if (isSelected) option.themeColor else Color.White.copy(alpha = 0.1f)
+                                            width = if (isSelected) 2.5.dp else 1.dp,
+                                            color = if (isSelected) option.themeColor else InputBorderDark
                                         ),
                                         shape = CircleShape
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(text = option.emoji, fontSize = 26.sp)
+                                Text(text = option.emoji, fontSize = 24.sp)
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -306,13 +290,14 @@ fun LoginScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
+            // Primary Action Button
             Button(
                 onClick = {
                     var hasError = false
                     if (isSignUpMode && name.isBlank()) {
-                        nameError = "Name is required"
+                        nameError = "Full name is required"
                         hasError = true
                     }
                     if (email.isBlank() || !email.contains("@")) {
@@ -369,66 +354,60 @@ fun LoginScreen(
                         }
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Secondary),
-                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = BrandIndigo),
+                shape = RoundedCornerShape(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(52.dp),
                 enabled = !isLoading
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(color = OnSecondary, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
                     Text(
-                        text = if (isSignUpMode) strings.registerButton else strings.signInButton,
+                        text = if (isSignUpMode) "Create Account" else "Sign In",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = OnSecondary
+                        color = Color.White,
+                        fontSize = 16.sp
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Offline Mode Button
             OutlinedButton(
                 onClick = {
-                    val defaultGuestName = when {
-                        isSpideyTheme -> "Web Slinger Agent"
-                        isBasicTheme  -> "Finance Investor"
-                        else          -> "Guest Pirate"
-                    }
-                    val defaultGuestEmail = when {
-                        isSpideyTheme -> "agent@shield.org"
-                        isBasicTheme  -> "pro.user@financeguide.ai"
-                        else          -> "guest@strawhats.org"
-                    }
-                    val guestName = if (name.isBlank()) defaultGuestName else name
-                    val guestEmail = if (email.isBlank()) defaultGuestEmail else email
+                    val guestName = if (name.isBlank()) "Finance Investor" else name
+                    val guestEmail = if (email.isBlank()) "investor@financeguide.ai" else email
                     Toast.makeText(context, "Continuing in Offline Mode", Toast.LENGTH_SHORT).show()
                     onLoginSuccess(guestName, guestEmail, selectedAvatar, "")
                 },
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, InputBorderDark),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White.copy(alpha = 0.8f)),
+                shape = RoundedCornerShape(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(50.dp),
                 enabled = !isLoading
             ) {
                 Text(
-                    text = strings.offlineButton,
+                    text = "Continue Offline",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Toggle Mode Link
             Text(
-                text = if (isSignUpMode) "Already registered? Sign In" else "New to the app? Create account & verify email!",
+                text = if (isSignUpMode) "Already have an account? Sign In" else "Don't have an account? Register",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = Secondary,
+                color = BrandIndigo,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .clickable { 
@@ -445,4 +424,64 @@ fun LoginScreen(
     }
 }
 
-data class AvatarOption(val name: String, val emoji: String, val themeColor: Color)
+@Composable
+fun ProfessionalLogo(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Outer glowing shield/badge background
+        val shieldPath = Path().apply {
+            moveTo(w * 0.5f, 0f)
+            lineTo(w * 0.95f, h * 0.25f)
+            lineTo(w * 0.95f, h * 0.65f)
+            cubicTo(w * 0.95f, h * 0.9f, w * 0.5f, h, w * 0.5f, h)
+            cubicTo(w * 0.5f, h, w * 0.05f, h * 0.9f, w * 0.05f, h * 0.65f)
+            lineTo(w * 0.05f, h * 0.25f)
+            close()
+        }
+
+        drawPath(
+            path = shieldPath,
+            brush = Brush.linearGradient(
+                colors = listOf(Color(0xFF6366F1), Color(0xFF10B981)),
+                start = Offset(0f, 0f),
+                end = Offset(w, h)
+            )
+        )
+
+        // Inner shield inset
+        val innerShieldPath = Path().apply {
+            moveTo(w * 0.5f, h * 0.08f)
+            lineTo(w * 0.88f, h * 0.28f)
+            lineTo(w * 0.88f, h * 0.63f)
+            cubicTo(w * 0.88f, h * 0.84f, w * 0.5f, h * 0.93f, w * 0.5f, h * 0.93f)
+            cubicTo(w * 0.5f, h * 0.93f, w * 0.12f, h * 0.84f, w * 0.12f, h * 0.63f)
+            lineTo(w * 0.12f, h * 0.28f)
+            close()
+        }
+
+        drawPath(
+            path = innerShieldPath,
+            color = Color(0xFF0F172A)
+        )
+
+        // Growth bar chart lines
+        val barWidth = w * 0.1f
+        drawRect(
+            color = Color(0xFF10B981),
+            topLeft = Offset(w * 0.28f, h * 0.55f),
+            size = Size(barWidth, h * 0.22f)
+        )
+        drawRect(
+            color = Color(0xFF38BDF8),
+            topLeft = Offset(w * 0.45f, h * 0.42f),
+            size = Size(barWidth, h * 0.35f)
+        )
+        drawRect(
+            color = Color(0xFF6366F1),
+            topLeft = Offset(w * 0.62f, h * 0.30f),
+            size = Size(barWidth, h * 0.47f)
+        )
+    }
+}
