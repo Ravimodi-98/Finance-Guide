@@ -18,6 +18,8 @@ import com.example.financeguide.ui.FinanceViewModel
 import com.example.financeguide.ui.screen.budget.BudgetScreen
 import com.example.financeguide.ui.screen.dashboard.DashboardScreen
 import com.example.financeguide.ui.screen.insights.InsightsScreen
+import com.example.financeguide.ui.screen.markets.MarketsScreen
+import com.example.financeguide.ui.screen.markets.MarketsViewModel
 import com.example.financeguide.ui.screen.settings.SettingsScreen
 import com.example.financeguide.ui.screen.transaction.AddTransactionScreen
 import com.example.financeguide.ui.screen.ai.FinanceAIScreen
@@ -103,6 +105,12 @@ fun FinanceNavGraph(
                     onBack = { navController.navigateUp() },
                     initialType = initialType
                 )
+            }
+            composable(TopLevelDestination.MARKETS.route) {
+                val marketsViewModel: MarketsViewModel = viewModel(
+                    factory = appContainer.marketsViewModelFactory
+                )
+                MarketsScreen(viewModel = marketsViewModel)
             }
             composable(TopLevelDestination.INSIGHTS.route) {
                 InsightsScreen(viewModel = viewModel)

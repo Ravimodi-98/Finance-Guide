@@ -15,9 +15,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 import com.example.financeguide.data.remote.FinanceApiService
 import com.example.financeguide.data.repository.AuthRepository
 import com.example.financeguide.data.repository.FinanceAIRepositoryImpl
+import com.example.financeguide.data.repository.MarketsRepository
 import com.example.financeguide.domain.repository.FinanceAIRepository
 import com.example.financeguide.domain.usecase.AskFinanceQuestionUseCase
 import com.example.financeguide.ui.screen.ai.FinanceAIViewModelFactory
+import com.example.financeguide.ui.screen.markets.MarketsViewModelFactory
 import java.util.concurrent.TimeUnit
 
 
@@ -92,6 +94,10 @@ class AppContainer(private val context: Context) {
         AuthRepository(financeApiService, settingsManager)
     }
 
+    val marketsRepository: MarketsRepository by lazy {
+        MarketsRepository(financeApiService)
+    }
+
     // --- Factories ---
 
     val financeViewModelFactory: FinanceViewModelFactory by lazy {
@@ -109,6 +115,12 @@ class AppContainer(private val context: Context) {
             askFinanceQuestionUseCase = askFinanceQuestionUseCase,
             localRepository = financeRepository,
             settingsManager = settingsManager
+        )
+    }
+
+    val marketsViewModelFactory: MarketsViewModelFactory by lazy {
+        MarketsViewModelFactory(
+            repository = marketsRepository
         )
     }
 }

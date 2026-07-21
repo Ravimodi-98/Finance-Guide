@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import chatRoutes from './routes/chatRoutes';
+import marketsRoutes from './routes/marketsRoutes';
 import { rateLimiter } from './middlewares/rateLimiter';
 import { errorHandler } from './middlewares/errorMiddleware';
 import { config } from './config/gemini';
@@ -36,6 +37,7 @@ app.post('/api/auth/login', authController.login);
 app.post('/api/auth/resend-verification', authController.resendVerification);
 
 // Main application routes
+app.use('/api/markets', marketsRoutes);
 app.use('/api', chatRoutes);
 
 // Global unhandled error handler

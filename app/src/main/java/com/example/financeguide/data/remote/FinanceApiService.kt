@@ -3,6 +3,7 @@ package com.example.financeguide.data.remote
 import com.example.financeguide.data.remote.model.*
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface FinanceApiService {
@@ -33,4 +34,10 @@ interface FinanceApiService {
     suspend fun resendVerification(
         @Body request: ResendVerificationRequestDto
     ): Response<ResendVerificationResponseDto>
+
+    @GET("api/markets/news")
+    suspend fun getNews(): Response<NewsResponseDto>
+
+    @GET("api/markets/exchange")
+    suspend fun getExchangeRates(): Response<ExchangeResponseDto>
 }
