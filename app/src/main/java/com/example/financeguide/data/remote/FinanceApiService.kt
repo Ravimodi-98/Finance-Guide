@@ -5,6 +5,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface FinanceApiService {
     @POST("api/chat")
@@ -36,8 +37,12 @@ interface FinanceApiService {
     ): Response<ResendVerificationResponseDto>
 
     @GET("api/markets/news")
-    suspend fun getNews(): Response<NewsResponseDto>
+    suspend fun getNews(
+        @Query("force") force: Boolean = false
+    ): Response<NewsResponseDto>
 
     @GET("api/markets/exchange")
-    suspend fun getExchangeRates(): Response<ExchangeResponseDto>
+    suspend fun getExchangeRates(
+        @Query("force") force: Boolean = false
+    ): Response<ExchangeResponseDto>
 }

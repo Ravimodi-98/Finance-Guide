@@ -3,7 +3,8 @@ import { marketsService } from '../services/marketsService';
 
 export const getNews = async (req: Request, res: Response) => {
   try {
-    const news = await marketsService.getFinancialNews();
+    const forceRefresh = req.query.force === 'true';
+    const news = await marketsService.getFinancialNews(forceRefresh);
     return res.status(200).json({
       success: true,
       count: news.length,
@@ -20,7 +21,8 @@ export const getNews = async (req: Request, res: Response) => {
 
 export const getExchangeRates = async (req: Request, res: Response) => {
   try {
-    const exchange = await marketsService.getExchangeRates();
+    const forceRefresh = req.query.force === 'true';
+    const exchange = await marketsService.getExchangeRates(forceRefresh);
     return res.status(200).json({
       success: true,
       data: exchange

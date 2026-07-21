@@ -12,9 +12,9 @@ sealed class MarketsResult<out T> {
 class MarketsRepository(
     private val apiService: FinanceApiService
 ) {
-    suspend fun getNews(): MarketsResult<List<FinnhubNewsArticleDto>> {
+    suspend fun getNews(forceRefresh: Boolean = false): MarketsResult<List<FinnhubNewsArticleDto>> {
         return try {
-            val response = apiService.getNews()
+            val response = apiService.getNews(force = forceRefresh)
             if (response.isSuccessful && response.body()?.success == true) {
                 MarketsResult.Success(response.body()?.data ?: emptyList())
             } else {
@@ -25,9 +25,9 @@ class MarketsRepository(
         }
     }
 
-    suspend fun getExchangeRates(): MarketsResult<ExchangeRateResponseData> {
+    suspend fun getExchangeRates(forceRefresh: Boolean = false): MarketsResult<ExchangeRateResponseData> {
         return try {
-            val response = apiService.getExchangeRates()
+            val response = apiService.getExchangeRates(force = forceRefresh)
             if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
                 MarketsResult.Success(response.body()!!.data!!)
             } else {

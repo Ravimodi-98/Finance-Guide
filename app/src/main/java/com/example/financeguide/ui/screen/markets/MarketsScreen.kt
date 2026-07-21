@@ -2,8 +2,10 @@ package com.example.financeguide.ui.screen.markets
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -54,6 +57,22 @@ fun MarketsScreen(
 
     val categories = listOf("All", "Markets", "Forex", "Crypto", "Economy", "Technology")
 
+    // Rotation animation for the refresh button
+    val infiniteTransition = rememberInfiniteTransition(label = "RefreshSpin")
+    val rotationAngle by if (uiState.isRefreshing) {
+        infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(800, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "Spin"
+        )
+    } else {
+        remember { mutableStateOf(0f) }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -84,11 +103,18 @@ fun MarketsScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.loadData() }) {
+                    IconButton(
+                        onClick = {
+                            Toast.makeText(context, "Refreshing live news & rates...", Toast.LENGTH_SHORT).show()
+                            viewModel.loadData(forceRefresh = true)
+                        },
+                        enabled = !uiState.isRefreshing
+                    ) {
                         Icon(
                             imageVector = Icons.Rounded.Refresh,
-                            contentDescription = "Refresh",
-                            tint = Color.White
+                            contentDescription = "Refresh News & Exchange Rates",
+                            tint = if (uiState.isRefreshing) PrimaryBlue else Color.White,
+                            modifier = Modifier.rotate(rotationAngle)
                         )
                     }
                 },
@@ -164,7 +190,7 @@ fun MarketsScreen(
                 if (uiState.isLoadingExchange && uiState.topCurrencies.isEmpty()) {
                     SkeletonExchangeGrid()
                 } else if (uiState.exchangeError != null && uiState.topCurrencies.isEmpty()) {
-                    ErrorCard(message = uiState.exchangeError!!, onRetry = { viewModel.fetchExchangeRates() })
+                    ErrorCard(message = uiState.exchangeError!!, onRetry = { viewModel.fetchExchangeRates(true) })
                 } else {
                     ExchangeRatesRow(currencies = uiState.topCurrencies)
                 }
@@ -242,7 +268,7 @@ fun MarketsScreen(
                 }
             } else if (uiState.newsError != null && uiState.filteredNews.isEmpty()) {
                 item {
-                    ErrorCard(message = uiState.newsError!!, onRetry = { viewModel.fetchNews() })
+                    ErrorCard(message = uiState.newsError!!, onRetry = { viewModel.fetchNews(true) })
                 }
             } else if (uiState.filteredNews.isEmpty()) {
                 item {

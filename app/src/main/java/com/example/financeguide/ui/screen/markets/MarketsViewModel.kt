@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 data class MarketsUiState(
     val isLoadingNews: Boolean = true,
     val isLoadingExchange: Boolean = true,
+    val isRefreshing: Boolean = false,
     val newsError: String? = null,
     val exchangeError: String? = null,
     val allNews: List<FinnhubNewsArticleDto> = emptyList(),
@@ -39,21 +40,27 @@ class MarketsViewModel(
     val uiState: StateFlow<MarketsUiState> = _uiState.asStateFlow()
 
     init {
-        loadData()
+        loadData(forceRefresh = false)
     }
 
-    fun loadData() {
-        fetchNews()
-        fetchExchangeRates()
+    fun loadData(forceRefresh: Boolean = false) {
+        if (forceRefresh) {
+            _uiState.value = _uiState.value.copy(isRefreshing = true)
+        }
+        fetchNews(forceRefresh)
+        fetchExchangeRates(forceRefresh)
     }
 
-    fun fetchNews() {
+    fun fetchNews(forceRefresh: Boolean = false) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoadingNews = true, newsError = null)
-            when (val result = repository.getNews()) {
+            if (!forceRefresh) {
+                _uiState.value = _uiState.value.copy(isLoadingNews = true, newsError = null)
+            }
+            when (val result = repository.getNews(forceRefresh)) {
                 is MarketsResult.Success -> {
                     _uiState.value = _uiState.value.copy(
                         isLoadingNews = false,
+                        isRefreshing = false,
                         allNews = result.data,
                         filteredNews = filterArticles(result.data, _uiState.value.selectedCategory, _uiState.value.searchQuery)
                     )
@@ -61,6 +68,7 @@ class MarketsViewModel(
                 is MarketsResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoadingNews = false,
+                        isRefreshing = false,
                         newsError = result.message
                     )
                 }
@@ -68,19 +76,21 @@ class MarketsViewModel(
         }
     }
 
-    fun fetchExchangeRates() {
+    fun fetchExchangeRates(forceRefresh: Boolean = false) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoadingExchange = true, exchangeError = null)
-            when (val result = repository.getExchangeRates()) {
+            if (!forceRefresh) {
+                _uiState.value = _uiState.value.copy(isLoadingExchange = true, exchangeError = null)
+            }
+            when (val result = repository.getExchangeRates(forceRefresh)) {
                 is MarketsResult.Success -> {
                     val ratesMap = result.data.rates ?: emptyMap()
                     val topList = buildTopCurrencies(ratesMap)
-                    val unixTime = result.data.timeLastUpdateUnix ?: (System.currentTimeMillis() / 1000)
-                    val updatedStr = java.text.SimpleDateFormat("hh:mm a, dd MMM yyyy", java.util.Locale.US)
-                        .format(java.util.Date(unixTime * 1000))
+                    val updatedStr = java.text.SimpleDateFormat("hh:mm:ss a, dd MMM yyyy", java.util.Locale.US)
+                        .format(java.util.Date())
 
                     _uiState.value = _uiState.value.copy(
                         isLoadingExchange = false,
+                        isRefreshing = false,
                         exchangeRates = ratesMap,
                         topCurrencies = topList,
                         lastUpdatedText = updatedStr
@@ -90,6 +100,7 @@ class MarketsViewModel(
                 is MarketsResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoadingExchange = false,
+                        isRefreshing = false,
                         exchangeError = result.message
                     )
                 }
@@ -139,7 +150,6 @@ class MarketsViewModel(
         val fromRate = rates[_uiState.value.fromCurrency] ?: 1.0
         val toRate = rates[_uiState.value.toCurrency] ?: 1.0
 
-        // Convert base USD to target currency
         val inUsd = if (fromRate != 0.0) amount / fromRate else amount
         val converted = inUsd * toRate
 
@@ -189,7 +199,6 @@ class MarketsViewModel(
 
         return currencyDefs.map { (code, name, flag) ->
             val rate = rates[code] ?: 1.0
-            // Compare relative to baseline
             val isAppreciating = when (code) {
                 "USD" -> true
                 "EUR" -> rate < 0.95

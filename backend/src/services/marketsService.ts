@@ -23,9 +23,9 @@ class MarketsService {
   private exchangeCache: { data: ExchangeRateData; expiresAt: number } | null = null;
   private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-  async getFinancialNews(): Promise<FinnhubNewsArticle[]> {
+  async getFinancialNews(forceRefresh: boolean = false): Promise<FinnhubNewsArticle[]> {
     const now = Date.now();
-    if (this.newsCache && this.newsCache.expiresAt > now) {
+    if (!forceRefresh && this.newsCache && this.newsCache.expiresAt > now) {
       logger.info('Returning cached financial news');
       return this.newsCache.data;
     }
@@ -34,7 +34,7 @@ class MarketsService {
     const url = `https://finnhub.io/api/v1/news?category=general&token=${apiKey}`;
 
     try {
-      logger.info('Fetching fresh financial news from Finnhub API');
+      logger.info(`Fetching fresh financial news from Finnhub API (forceRefresh=${forceRefresh})`);
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Finnhub API error HTTP ${response.status}`);
@@ -59,9 +59,9 @@ class MarketsService {
     }
   }
 
-  async getExchangeRates(): Promise<ExchangeRateData> {
+  async getExchangeRates(forceRefresh: boolean = false): Promise<ExchangeRateData> {
     const now = Date.now();
-    if (this.exchangeCache && this.exchangeCache.expiresAt > now) {
+    if (!forceRefresh && this.exchangeCache && this.exchangeCache.expiresAt > now) {
       logger.info('Returning cached exchange rates');
       return this.exchangeCache.data;
     }
@@ -69,7 +69,7 @@ class MarketsService {
     const url = 'https://open.er-api.com/v6/latest/USD';
 
     try {
-      logger.info('Fetching fresh exchange rates from ExchangeRate API');
+      logger.info(`Fetching fresh exchange rates from ExchangeRate API (forceRefresh=${forceRefresh})`);
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`ExchangeRate API error HTTP ${response.status}`);
