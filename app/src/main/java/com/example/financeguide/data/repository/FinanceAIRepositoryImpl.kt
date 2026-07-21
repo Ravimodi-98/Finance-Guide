@@ -18,32 +18,53 @@ class FinanceAIRepositoryImpl(
         history: List<ChatMessageDto>,
         theme: String
     ): Result<ChatResponseDto> {
+        val isSpidey = theme == "spiderman"
+        val isBasic = theme == "basic"
         return try {
+
             val response = apiService.chat(ChatRequestDto(message, history, theme))
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null) {
                     Result.success(body)
                 } else {
-                    Result.failure(Exception("Received an empty logbook from the server."))
+                    val emptyMsg = when {
+                        isSpidey -> "Received an empty case file from the server."
+                        isBasic  -> "Received an empty response from the AI server."
+                        else     -> "Received an empty logbook from the server."
+                    }
+                    Result.failure(Exception(emptyMsg))
                 }
             } else {
                 val errorMsg = when (response.code()) {
-                    429 -> "Too many requests! Nami is drawing sea charts, please wait a minute before asking again."
-                    500 -> "The backend ship engine encountered a problem (500). Please try again later!"
-                    401, 403 -> "Secret clearance check failed (Unauthorized/Forbidden)."
-                    else -> "The Navigator encountered an error: ${response.code()} ${response.message()}"
+                    429 -> when {
+                        isSpidey -> "Too many requests! Spider-Sense overloaded, please wait a minute."
+                        isBasic  -> "Too many requests! FinBot is processing queries, please wait a minute."
+                        else     -> "Too many requests! Nami is drawing sea charts, please wait a minute."
+                    }
+                    500 -> when {
+                        isSpidey -> "The hero network server encountered a problem (500). Please try again!"
+                        isBasic  -> "The AI financial server encountered a problem (500). Please try again!"
+                        else     -> "The backend ship engine encountered a problem (500). Please try again!"
+                    }
+                    401, 403 -> "Authorization check failed (Unauthorized/Forbidden)."
+                    else -> "An error occurred (${response.code()}): ${response.message()}"
                 }
                 Result.failure(Exception(errorMsg))
             }
         } catch (e: SocketTimeoutException) {
-            Result.failure(Exception("Connection timed out. The seas are too rough to reach the server!"))
+            val timeoutMsg = when {
+                isSpidey -> "Connection timed out. Web signal interrupted!"
+                isBasic  -> "Connection timed out. Unable to reach AI server."
+                else     -> "Connection timed out. The seas are too rough to reach the server!"
+            }
+            Result.failure(Exception(timeoutMsg))
         } catch (e: IOException) {
             Result.failure(Exception("No internet connection. Please check your network and try again!"))
         } catch (e: HttpException) {
             Result.failure(Exception("HTTP Error: ${e.message()}"))
         } catch (e: Exception) {
-            Result.failure(Exception(e.message ?: "An unknown sea storm occurred."))
+            Result.failure(Exception(e.message ?: "An unexpected error occurred."))
         }
     }
 

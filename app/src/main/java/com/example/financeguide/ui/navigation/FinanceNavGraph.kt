@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.financeguide.domain.model.TransactionType
 import com.example.financeguide.ui.FinanceViewModel
 import com.example.financeguide.ui.screen.budget.BudgetScreen
@@ -21,7 +22,6 @@ import com.example.financeguide.ui.screen.settings.SettingsScreen
 import com.example.financeguide.ui.screen.transaction.AddTransactionScreen
 import com.example.financeguide.ui.screen.ai.FinanceAIScreen
 import com.example.financeguide.ui.screen.ai.FinanceAIViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun FinanceNavGraph(

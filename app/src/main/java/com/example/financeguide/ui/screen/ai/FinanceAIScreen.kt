@@ -75,21 +75,21 @@ fun FinanceAIScreen(
 
     val isKeyboardOpen = WindowInsets.ime.getBottom(LocalDensity.current) > 0
 
-    // Theme Colors
+    // Unique Theme Colors (No WhatsApp colors)
     val screenBg = when {
-        isSpidey -> Color(0xFF0A0A0A)
-        isBasic  -> Color(0xFF09090B)
-        else     -> Color(0xFF0B141A)
+        isSpidey -> Color(0xFF0D0B12) // Web Suit Obsidian
+        isBasic  -> Color(0xFF080D1A) // Finance Pro Obsidian Slate
+        else     -> Color(0xFF0A111E) // One Piece Grand Line Navy
     }
     val headerBg = when {
-        isSpidey -> Color(0xFF121212)
-        isBasic  -> Color(0xFF111115)
-        else     -> Color(0xFF1F2C34)
+        isSpidey -> Color(0xFF18101C) // Web Suit Tech Header
+        isBasic  -> Color(0xFF0E1626) // Finance Pro Glass Header
+        else     -> Color(0xFF121E33) // One Piece Marine Navy Header
     }
     val topBorderGradient = when {
-        isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
-        isBasic  -> listOf(Color(0xFF6366F1), Color(0xFF10B981))
-        else     -> listOf(Color(0xFF1E88E5), Color(0xFFF6C445))
+        isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8)) // Web Crimson to Spider Blue
+        isBasic  -> listOf(Color(0xFF00E599), Color(0xFF00D2FF)) // Mint Emerald to Cyber Cyan
+        else     -> listOf(Color(0xFFFFC72C), Color(0xFF1E88E5)) // Straw Hat Gold to Marine Blue
     }
 
     // Auto-scroll to the bottom when new messages arrive
@@ -121,15 +121,15 @@ fun FinanceAIScreen(
                                 Text(
                                     text = if (uiState.isLoading) {
                                         when {
-                                            isSpidey -> "spider-sense tingling..."
-                                            isBasic  -> "analyzing data..."
-                                            else     -> "calculating route..."
+                                            isSpidey -> "Spider-Sense Thinking..."
+                                            isBasic  -> "FinBot Analyzing..."
+                                            else     -> "Nami Calculating..."
                                         }
                                     } else {
                                         when {
-                                            isSpidey -> "online & patrolling 🕸️"
-                                            isBasic  -> "online & analyzing 📊"
-                                            else     -> "online & sailing ⛵"
+                                            isSpidey -> "AI Patrol Guide 🕸️"
+                                            isBasic  -> "AI Wealth Advisor 📊"
+                                            else     -> "AI Navigation Guide ⛵"
                                         }
                                     },
                                     color = if (uiState.isLoading) (
@@ -154,27 +154,12 @@ fun FinanceAIScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = {}) {
-                            Icon(
-                                imageVector = Icons.Rounded.Videocam,
-                                contentDescription = "Video Call",
-                                tint = Color.White,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-                        IconButton(onClick = {}) {
-                            Icon(
-                                imageVector = Icons.Rounded.Call,
-                                contentDescription = "Call",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
                         IconButton(onClick = { viewModel.clearChat() }) {
                             Icon(
-                                imageVector = Icons.Rounded.MoreVert,
-                                contentDescription = "Menu / Clear Chat",
-                                tint = Color.White
+                                imageVector = Icons.Rounded.DeleteOutline,
+                                contentDescription = "Clear Chat",
+                                tint = Color.White.copy(alpha = 0.8f),
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                     },
@@ -343,119 +328,111 @@ fun FinanceAIScreen(
                 )
             }
 
-            // Input Row
+            // Modern AI Assistant Prompt Card
             Surface(
-                color = if (isSpidey) Color(0xFF121212) else Color(0xFF1F2C34),
+                color = when {
+                    isSpidey -> Color(0xFF18101C)
+                    isBasic  -> Color(0xFF0E1626)
+                    else     -> Color(0xFF121E33)
+                },
                 tonalElevation = 8.dp
             ) {
-                Row(
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = when {
+                        isSpidey -> Color(0xFF23182B)
+                        isBasic  -> Color(0xFF172238)
+                        else     -> Color(0xFF192A45)
+                    },
+                    border = BorderStroke(
+                        1.dp,
+                        when {
+                            isSpidey -> Color(0xFFC1121F).copy(alpha = 0.45f)
+                            isBasic  -> Color(0xFF00E599).copy(alpha = 0.35f)
+                            else     -> Color(0xFFFFC72C).copy(alpha = 0.35f)
+                        }
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
-                    // Theme Styled Input Box
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = if (isSpidey) Color(0xFF1F2C34) else if (isBasic) Color(0xFF111115) else Color(0xFF2A3942),
-                        border = BorderStroke(
-                            1.dp,
-                            if (isSpidey) Color(0xFFC1121F).copy(alpha = 0.35f) else Color(0xFFF6C445).copy(alpha = 0.25f)
-                        ),
-                        modifier = Modifier.weight(1f)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            IconButton(onClick = {}) {
-                                Icon(
-                                    imageVector = Icons.Rounded.SentimentSatisfiedAlt,
-                                    contentDescription = "Emojis",
-                                    tint = Color.White.copy(alpha = 0.5f),
-                                    modifier = Modifier.size(22.dp)
+                        TextField(
+                            value = inputText,
+                            onValueChange = { inputText = it },
+                            placeholder = {
+                                Text(
+                                    text = when {
+                                        isSpidey -> "Ask Spider-Man anything..."
+                                        isBasic  -> "Ask FinBot a financial question..."
+                                        else     -> "Ask Nami a question..."
+                                    },
+                                    color = Color.White.copy(alpha = 0.45f),
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
-                            }
-                            
-                            TextField(
-                                value = inputText,
-                                onValueChange = { inputText = it },
-                                placeholder = {
-                                    Text(
-                                        text = when {
-                                    isSpidey -> "Ask Spider-Man..."
-                                    isBasic  -> "Ask FinBot..."
-                                    else     -> "Message Nami..."
-                                },
-                                        color = Color.White.copy(alpha = 0.4f),
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                },
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    disabledContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.Transparent,
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    imeAction = ImeAction.Send
-                                ),
-                                keyboardActions = KeyboardActions(
-                                    onSend = {
-                                        if (inputText.isNotBlank() && !uiState.isLoading) {
-                                            viewModel.sendMessage(inputText)
-                                            inputText = ""
-                                            keyboardController?.hide()
-                                        }
-                                    }
-                                ),
-                                modifier = Modifier.weight(1f),
-                                maxLines = 4
-                            )
-                            
-                            IconButton(onClick = {}) {
-                                Icon(
-                                    imageVector = Icons.Rounded.AttachFile,
-                                    contentDescription = "Attach File",
-                                    tint = Color.White.copy(alpha = 0.5f),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    // Theme FAB Send Button
-                    val sendGradient = when {
-                        isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
-                        isBasic  -> listOf(Color(0xFF6366F1), Color(0xFF10B981))
-                        else     -> listOf(Color(0xFF1E88E5), Color(0xFF00A884))
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(brush = Brush.linearGradient(sendGradient))
-                            .clickable {
-                                if (inputText.isNotBlank() && !uiState.isLoading) {
-                                    viewModel.sendMessage(inputText)
-                                    inputText = ""
-                                    keyboardController?.hide()
-                                }
                             },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (inputText.isNotBlank()) Icons.AutoMirrored.Rounded.Send else Icons.Rounded.Mic,
-                            contentDescription = "Send",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Send
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onSend = {
+                                    if (inputText.isNotBlank() && !uiState.isLoading) {
+                                        viewModel.sendMessage(inputText)
+                                        inputText = ""
+                                        keyboardController?.hide()
+                                    }
+                                }
+                            ),
+                            modifier = Modifier.weight(1f),
+                            maxLines = 4
                         )
+
+                        val sendGradient = when {
+                            isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
+                            isBasic  -> listOf(Color(0xFF00E599), Color(0xFF00D2FF))
+                            else     -> listOf(Color(0xFFFFC72C), Color(0xFF1E88E5))
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    brush = if (inputText.isNotBlank() && !uiState.isLoading) {
+                                        Brush.linearGradient(sendGradient)
+                                    } else {
+                                        Brush.linearGradient(listOf(Color.White.copy(alpha = 0.15f), Color.White.copy(alpha = 0.15f)))
+                                    }
+                                )
+                                .clickable(enabled = inputText.isNotBlank() && !uiState.isLoading) {
+                                    if (inputText.isNotBlank() && !uiState.isLoading) {
+                                        viewModel.sendMessage(inputText)
+                                        inputText = ""
+                                        keyboardController?.hide()
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.Send,
+                                contentDescription = "Send",
+                                tint = if (inputText.isNotBlank() && !uiState.isLoading) Color.White else Color.White.copy(alpha = 0.4f),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -483,23 +460,23 @@ fun ChatBubble(
 
     val containerColor = if (message.isFromUser) {
         when {
-            isSpidey -> Color(0xFF1D4ED8)
-            isBasic  -> Color(0xFF4338CA) // Deep indigo for user
-            else     -> Color(0xFF005C4B)
+            isSpidey -> Color(0xFF9E0B16) // Web Crimson for User
+            isBasic  -> Color(0xFF008055) // Deep Mint Emerald for User
+            else     -> Color(0xFF1E88E5) // Marine Ocean Blue for User
         }
     } else {
         when {
-            isSpidey -> Color(0xFF1C1315)
-            isBasic  -> Color(0xFF1C1C23)
-            else     -> Color(0xFF202C33)
+            isSpidey -> Color(0xFF1C1422) // Tech Suit Dark Slate for Bot
+            isBasic  -> Color(0xFF172238) // Glass Slate for Bot
+            else     -> Color(0xFF152238) // Pirate Navy for Bot
         }
     }
 
     val borderColor = if (!message.isFromUser) {
         when {
-            isSpidey -> Color(0xFFC1121F).copy(alpha = 0.4f)
-            isBasic  -> Color(0xFF6366F1).copy(alpha = 0.35f)
-            else     -> Color(0xFFF6C445).copy(alpha = 0.3f)
+            isSpidey -> Color(0xFFC1121F).copy(alpha = 0.45f)
+            isBasic  -> Color(0xFF00E599).copy(alpha = 0.35f)
+            else     -> Color(0xFFFFC72C).copy(alpha = 0.40f)
         }
     } else {
         Color.Transparent
@@ -544,15 +521,6 @@ fun ChatBubble(
                             color = Color.White.copy(alpha = 0.55f),
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp)
                         )
-                        if (message.isFromUser) {
-                            Spacer(modifier = Modifier.width(3.dp))
-                            Icon(
-                                imageVector = Icons.Rounded.DoneAll,
-                                contentDescription = "Read",
-                                tint = if (isSpidey) Color(0xFF60A5FA) else Color(0xFF53BDEB),
-                                modifier = Modifier.size(13.dp)
-                            )
-                        }
                     }
 
                     if (!message.isFromUser) {
@@ -655,9 +623,10 @@ fun SuggestionChip(
 ) {
     val strings = LocalThemeStrings.current
     val isSpidey = strings.chatbotName == "Spider-Man"
+    val isBasic = strings.chatbotName == "FinBot"
 
-    val emoji = if (isSpidey) {
-        when {
+    val emoji = when {
+        isSpidey -> when {
             label.contains("stocks") || label.contains("IPOs") || label.contains("market") -> "📈"
             label.contains("banking") || label.contains("interest") -> "🏦"
             label.contains("news") -> "📰"
@@ -667,8 +636,17 @@ fun SuggestionChip(
             label.contains("reduce") || label.contains("save") || label.contains("split") -> "🛡️"
             else -> "🕸️"
         }
-    } else {
-        when {
+        isBasic -> when {
+            label.contains("stocks") || label.contains("IPOs") || label.contains("portfolio") || label.contains("investing") -> "📈"
+            label.contains("banking") || label.contains("interest") || label.contains("deposits") -> "🏦"
+            label.contains("news") -> "📰"
+            label.contains("spent") || label.contains("groceries") -> "💳"
+            label.contains("earned") || label.contains("salary") -> "💵"
+            label.contains("budget") -> "📊"
+            label.contains("emergency") || label.contains("save") -> "🛡️"
+            else -> "💎"
+        }
+        else -> when {
             label.contains("stocks") || label.contains("IPOs") || label.contains("portfolio") -> "📈"
             label.contains("banking") || label.contains("interest") || label.contains("deposits") -> "🏦"
             label.contains("news") -> "📰"
@@ -681,8 +659,16 @@ fun SuggestionChip(
         }
     }
 
-    val borderColor = if (isSpidey) Color(0xFFC1121F).copy(alpha = 0.45f) else Color(0xFFF6C445).copy(alpha = 0.35f)
-    val chipBg = if (isSpidey) Color(0xFF161616) else SurfaceDarkElevated
+    val borderColor = when {
+        isSpidey -> Color(0xFFC1121F).copy(alpha = 0.45f)
+        isBasic  -> Color(0xFF00E599).copy(alpha = 0.45f)
+        else     -> Color(0xFFF6C445).copy(alpha = 0.35f)
+    }
+    val chipBg = when {
+        isSpidey -> Color(0xFF23182B)
+        isBasic  -> Color(0xFF172238)
+        else     -> Color(0xFF192A45)
+    }
 
     Surface(
         shape = RoundedCornerShape(20.dp),
@@ -719,14 +705,14 @@ fun TypingIndicatorRow(isSpidey: Boolean = false, isBasic: Boolean = false) {
         Surface(
             shape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp, bottomStart = 4.dp, bottomEnd = 14.dp),
             color = when {
-                isSpidey -> Color(0xFF1C1315)
-                isBasic  -> Color(0xFF1C1C23)
-                else     -> Color(0xFF202C33)
+                isSpidey -> Color(0xFF1C1422)
+                isBasic  -> Color(0xFF172238)
+                else     -> Color(0xFF152238)
             },
             border = BorderStroke(1.dp, when {
-                isSpidey -> Color(0xFFC1121F).copy(alpha = 0.4f)
-                isBasic  -> Color(0xFF6366F1).copy(alpha = 0.35f)
-                else     -> Color(0xFFF6C445).copy(alpha = 0.3f)
+                isSpidey -> Color(0xFFC1121F).copy(alpha = 0.45f)
+                isBasic  -> Color(0xFF00E599).copy(alpha = 0.35f)
+                else     -> Color(0xFFFFC72C).copy(alpha = 0.40f)
             })
         ) {
             Row(
@@ -879,21 +865,21 @@ fun FinBotAvatar(modifier: Modifier = Modifier) {
         val radius = size.minDimension / 2
         val w = size.width
         val h = size.height
-        // Outer indigo ring
-        drawCircle(color = Color(0xFF6366F1), radius = radius)
-        // Inner dark background
-        drawCircle(color = Color(0xFF09090B), radius = radius * 0.84f)
-        // Emerald inner ring
+        // Outer Mint Emerald ring
+        drawCircle(color = Color(0xFF00E599), radius = radius)
+        // Inner Dark Obsidian background
+        drawCircle(color = Color(0xFF080D1A), radius = radius * 0.84f)
+        // Cyber Cyan inner ring
         drawCircle(
-            color = Color(0xFF10B981),
+            color = Color(0xFF00D2FF),
             radius = radius * 0.60f,
             style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3f)
         )
-        // Indigo cross lines (circuit style)
-        drawLine(color = Color(0xFF6366F1).copy(alpha = 0.6f), start = Offset(w*0.5f, h*0.2f), end = Offset(w*0.5f, h*0.8f), strokeWidth = 2.5f)
-        drawLine(color = Color(0xFF6366F1).copy(alpha = 0.6f), start = Offset(w*0.2f, h*0.5f), end = Offset(w*0.8f, h*0.5f), strokeWidth = 2.5f)
-        // Center emerald dot
-        drawCircle(color = Color(0xFF10B981), radius = radius * 0.14f)
+        // Mint Emerald cross lines
+        drawLine(color = Color(0xFF00E599).copy(alpha = 0.6f), start = Offset(w*0.5f, h*0.2f), end = Offset(w*0.5f, h*0.8f), strokeWidth = 2.5f)
+        drawLine(color = Color(0xFF00E599).copy(alpha = 0.6f), start = Offset(w*0.2f, h*0.5f), end = Offset(w*0.8f, h*0.5f), strokeWidth = 2.5f)
+        // Center Radiant Gold dot
+        drawCircle(color = Color(0xFFFFC72C), radius = radius * 0.14f)
     }
 }
 
@@ -965,11 +951,11 @@ fun FinBotWatermark(modifier: Modifier = Modifier) {
         val h = size.height
         val center = Offset(w * 0.5f, h * 0.45f)
         val radius = size.minDimension * 0.35f
-        val indigoAlpha = Color(0xFF6366F1).copy(alpha = 0.05f)
-        val emeraldAlpha = Color(0xFF10B981).copy(alpha = 0.04f)
-        // Outer indigo ring
+        val mintAlpha = Color(0xFF00E599).copy(alpha = 0.05f)
+        val cyanAlpha = Color(0xFF00D2FF).copy(alpha = 0.04f)
+        // Outer mint ring
         drawCircle(
-            color = indigoAlpha,
+            color = mintAlpha,
             radius = radius,
             center = center,
             style = androidx.compose.ui.graphics.drawscope.Stroke(
@@ -978,25 +964,25 @@ fun FinBotWatermark(modifier: Modifier = Modifier) {
             )
         )
         drawCircle(
-            color = emeraldAlpha,
+            color = cyanAlpha,
             radius = radius * 0.6f,
             center = center,
             style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5f)
         )
-        // Grid lines (circuit board feel)
-        drawLine(color = indigoAlpha, start = Offset(center.x, center.y - radius * 1.1f), end = Offset(center.x, center.y + radius * 1.1f), strokeWidth = 2f)
-        drawLine(color = indigoAlpha, start = Offset(center.x - radius * 1.1f, center.y), end = Offset(center.x + radius * 1.1f, center.y), strokeWidth = 2f)
-        drawLine(color = emeraldAlpha, start = Offset(center.x - radius * 0.7f, center.y - radius * 0.7f), end = Offset(center.x + radius * 0.7f, center.y + radius * 0.7f), strokeWidth = 1.5f)
-        drawLine(color = emeraldAlpha, start = Offset(center.x + radius * 0.7f, center.y - radius * 0.7f), end = Offset(center.x - radius * 0.7f, center.y + radius * 0.7f), strokeWidth = 1.5f)
+        // Grid lines (financial graph feel)
+        drawLine(color = mintAlpha, start = Offset(center.x, center.y - radius * 1.1f), end = Offset(center.x, center.y + radius * 1.1f), strokeWidth = 2f)
+        drawLine(color = mintAlpha, start = Offset(center.x - radius * 1.1f, center.y), end = Offset(center.x + radius * 1.1f, center.y), strokeWidth = 2f)
+        drawLine(color = cyanAlpha, start = Offset(center.x - radius * 0.7f, center.y - radius * 0.7f), end = Offset(center.x + radius * 0.7f, center.y + radius * 0.7f), strokeWidth = 1.5f)
+        drawLine(color = cyanAlpha, start = Offset(center.x + radius * 0.7f, center.y - radius * 0.7f), end = Offset(center.x - radius * 0.7f, center.y + radius * 0.7f), strokeWidth = 1.5f)
         // Center dot
-        drawCircle(color = Color(0xFF6366F1).copy(alpha = 0.08f), radius = radius * 0.12f, center = center)
+        drawCircle(color = Color(0xFF00E599).copy(alpha = 0.08f), radius = radius * 0.12f, center = center)
     }
 }
 
 private fun parseMarkdown(text: String, isSpidey: Boolean = false, isBasic: Boolean = false): AnnotatedString {
     val highlightColor = when {
         isSpidey -> Color(0xFFF6C445)
-        isBasic  -> Color(0xFF34D399) // Emerald for FinBot
+        isBasic  -> Color(0xFF00E599) // Mint Emerald for FinBot
         else     -> SecondaryLight
     }
     val builder = buildAnnotatedString {

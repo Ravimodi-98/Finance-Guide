@@ -19,7 +19,7 @@ import java.util.Locale
 
 import androidx.compose.runtime.staticCompositionLocalOf
 
-val LocalCurrency = staticCompositionLocalOf { "BELI" }
+val LocalCurrency = staticCompositionLocalOf { "USD" }
 
 @Composable
 fun AnimatedCounter(
@@ -27,7 +27,7 @@ fun AnimatedCounter(
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,
     color: Color = style.color,
-    currencyCode: String = "INR"
+    currencyCode: String = "USD"
 ) {
     var animatedCount by remember { mutableFloatStateOf(0f) }
 
@@ -51,15 +51,22 @@ fun AnimatedCounter(
     )
 }
 
-fun formatAmountString(amount: Double, currencyCode: String = "BELI"): String {
+fun getCurrencySymbol(currencyCode: String): String {
+    return when (currencyCode.uppercase()) {
+        "INR"  -> "₹"
+        "USD"  -> "$"
+        "EUR"  -> "€"
+        "GBP"  -> "£"
+        "JPY"  -> "¥"
+        "BELI" -> "฿"
+        else   -> "$"
+    }
+}
+
+fun formatAmountString(amount: Double, currencyCode: String = "USD"): String {
     val format = NumberFormat.getNumberInstance(Locale.US).apply {
         maximumFractionDigits = 0
     }
-    return when (currencyCode) {
-        "BELI" -> "฿${format.format(amount)}"
-        "INR" -> "₹${format.format(amount)}"
-        "USD" -> "$${format.format(amount)}"
-        "GBP" -> "£${format.format(amount)}"
-        else -> "${format.format(amount)} $currencyCode"
-    }
+    val symbol = getCurrencySymbol(currencyCode)
+    return "$symbol${format.format(amount)}"
 }

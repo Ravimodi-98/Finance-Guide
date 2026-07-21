@@ -18,7 +18,7 @@ app.use(helmet());
 // Enable CORS for client apps
 app.use(cors({
   origin: '*', // In production, customize this to restrict access to specific origins
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 

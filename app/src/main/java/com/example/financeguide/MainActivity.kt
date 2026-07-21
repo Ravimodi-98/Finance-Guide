@@ -184,7 +184,7 @@ class MainActivity : ComponentActivity() {
                                         fontWeight = FontWeight.Bold,
                                         color = when (themeMode) {
                                             "spiderman" -> SpideyPrimaryLight
-                                            "basic" -> Color(0xFF818CF8) // ProPrimaryLight
+                                            "basic" -> Color(0xFF00E599) // Mint Emerald
                                             else -> Color(0xFFFFB703)
                                         },
                                         letterSpacing = 4.sp
@@ -192,7 +192,7 @@ class MainActivity : ComponentActivity() {
                                     Text(
                                         text = when (themeMode) {
                                             "spiderman" -> "Friendly Neighborhood Ledger 🕷️"
-                                            "basic" -> "Your AI Finance Companion 📊"
+                                            "basic" -> "Professional AI Financial Advisor 📊"
                                             else -> "The Pirate King's Ledger"
                                         },
                                         fontSize = 14.sp,

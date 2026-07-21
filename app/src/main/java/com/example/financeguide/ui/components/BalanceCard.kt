@@ -40,10 +40,11 @@ fun BalanceCard(
 ) {
     val strings = com.example.financeguide.theme.LocalThemeStrings.current
     val isSpidey = strings.chatbotName == "Spider-Man"
-    val gradientColors = if (isSpidey) {
-        listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
-    } else {
-        listOf(Color(0xFF1E88E5), Color(0xFFF6C445))
+    val isBasic = strings.chatbotName == "FinBot"
+    val gradientColors = when {
+        isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
+        isBasic  -> listOf(Color(0xFF00E599), Color(0xFF00D2FF))
+        else     -> listOf(Color(0xFF1E88E5), Color(0xFFF6C445))
     }
 
     Box(

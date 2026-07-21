@@ -35,41 +35,39 @@ data class ChatUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val suggestedQuestions: List<String> = listOf(
-        "I spent 500 Beli on food",
-        "I earned 10000 Beli from a treasure hunt",
-        "Set budget of 3000 Beli for entertainment",
-        "Reduce unnecessary expenses",
-        "How much should I save every month?"
+        "Explain Quantum Computing in simple terms",
+        "Write a Python script to sort a list",
+        "How do I build a \$10,000 emergency fund?",
+        "I spent \$200 on groceries today",
+        "What are the best habits for productivity?",
+        "Explain index funds vs mutual funds"
     )
 )
 
 private fun suggestionsForTheme(theme: String): List<String> = when (theme) {
     "spiderman" -> listOf(
-        "What are top growth stocks & IPOs right now?",
-        "How do central bank interest rates affect inflation?",
-        "What's the latest stock market & financial news?",
-        "I spent 500 Credits on mission gear",
-        "I earned 10000 Credits from a S.H.I.E.L.D. mission",
-        "Set budget of 3000 Credits for tech upgrades",
-        "How should I split savings between stocks & mutual funds?"
+        "How do I code an app using Kotlin?",
+        "What's the science behind web fluid synthesis?",
+        "How do central bank interest rates work?",
+        "I spent 500 Credits on web fluid",
+        "Explain black holes and general relativity",
+        "Set budget of 3000 Credits for gear"
     )
     "basic" -> listOf(
-        "How do I start investing with \$500?",
-        "What's the best way to build an emergency fund?",
-        "Explain SIP and index fund investing",
-        "I spent \$200 on groceries this week",
-        "I earned \$5000 salary this month",
-        "Set a monthly budget of \$1000 for expenses",
-        "How should I diversify my portfolio?"
+        "Write a Python function for binary search",
+        "What is the theory of relativity?",
+        "How do I start investing with $500?",
+        "I spent $200 on groceries today",
+        "Give me 5 tips to improve my sleep",
+        "Set a monthly budget of $1000 for bills"
     )
     else -> listOf(
-        "What are top growth stocks & IPOs to invest in?",
-        "Explain banking interest rates & fixed deposits",
-        "What's the latest financial & market news?",
+        "Explain how Artificial Intelligence works",
+        "Write a clean JavaScript async fetch example",
+        "How do stock markets and dividends work?",
         "I spent 500 Beli on food",
-        "I earned 10000 Beli from a treasure hunt",
-        "Set budget of 3000 Beli for entertainment",
-        "How should I build a strong investment portfolio?"
+        "What is the history of the Grand Line?",
+        "Set budget of 3000 Beli for banquets"
     )
 }
 

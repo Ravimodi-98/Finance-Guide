@@ -52,6 +52,8 @@ import com.example.financeguide.domain.model.Category
 import com.example.financeguide.domain.model.TransactionType
 import com.example.financeguide.theme.LocalThemeStrings
 import com.example.financeguide.ui.FinanceViewModel
+import com.example.financeguide.ui.components.LocalCurrency
+import com.example.financeguide.ui.components.getCurrencySymbol
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +72,7 @@ fun AddTransactionScreen(
 
     val strings = LocalThemeStrings.current
     val isSpidey = strings.chatbotName == "Spider-Man"
+    val isBasic  = strings.chatbotName == "FinBot"
 
     val accentGold = Color(0xFFF6C445)
     val accentOcean = Color(0xFF1E88E5)
@@ -81,7 +84,11 @@ fun AddTransactionScreen(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = if (isSpidey) "🕷️ Log Entry" else "⛵ Log Bounty Entry",
+                            text = when {
+                                isSpidey -> "🕷️ Log Entry"
+                                isBasic  -> "📊 Log Transaction"
+                                else     -> "⛵ Log Bounty Entry"
+                            },
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -111,12 +118,16 @@ fun AddTransactionScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 CreativeTypeButton(
-                    text = if (isSpidey) "Income ⚡" else "Bounty Gain 💰",
+                    text = when {
+                        isSpidey -> "Income ⚡"
+                        isBasic  -> "Income 📈"
+                        else     -> "Bounty Gain 💰"
+                    },
                     selected = selectedType == TransactionType.INCOME,
-                    gradient = if (isSpidey) {
-                        listOf(Color(0xFF1D4ED8), Color(0xFF00388A))
-                    } else {
-                        listOf(Color(0xFF1E88E5), Color(0xFFF6C445))
+                    gradient = when {
+                        isSpidey -> listOf(Color(0xFF1D4ED8), Color(0xFF00388A))
+                        isBasic  -> listOf(Color(0xFF00E599), Color(0xFF009966))
+                        else     -> listOf(Color(0xFF1E88E5), Color(0xFFF6C445))
                     },
                     onClick = {
                         selectedType = TransactionType.INCOME
@@ -127,12 +138,16 @@ fun AddTransactionScreen(
                     modifier = Modifier.weight(1f)
                 )
                 CreativeTypeButton(
-                    text = if (isSpidey) "Expense 🕸️" else "Bounty Loss ⚓",
+                    text = when {
+                        isSpidey -> "Expense 🕸️"
+                        isBasic  -> "Expense 💳"
+                        else     -> "Bounty Loss ⚓"
+                    },
                     selected = selectedType == TransactionType.EXPENSE,
-                    gradient = if (isSpidey) {
-                        listOf(Color(0xFFC1121F), Color(0xFF780000))
-                    } else {
-                        listOf(Color(0xFFC62828), Color(0xFFE85D04))
+                    gradient = when {
+                        isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF780000))
+                        isBasic  -> listOf(Color(0xFFEF4444), Color(0xFF991B1B))
+                        else     -> listOf(Color(0xFFC62828), Color(0xFFE85D04))
                     },
                     onClick = {
                         selectedType = TransactionType.EXPENSE
@@ -160,6 +175,8 @@ fun AddTransactionScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val currencyCode = LocalCurrency.current
+                    val currencySymbol = getCurrencySymbol(currencyCode)
                     Box(
                         modifier = Modifier
                             .size(44.dp)
@@ -170,7 +187,7 @@ fun AddTransactionScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (isSpidey) "$" else "฿",
+                            text = currencySymbol,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (selectedType == TransactionType.INCOME) accentOcean else accentCrimson
@@ -204,12 +221,16 @@ fun AddTransactionScreen(
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text(if (isSpidey) "Title or Reason" else "Bounty Note or Reason") },
+                label = { Text(when { isSpidey -> "Title or Reason"; isBasic -> "Title or Note"; else -> "Bounty Note or Reason" }) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (isSpidey) Color(0xFF1D4ED8) else accentGold,
+                    focusedBorderColor = when {
+                        isSpidey -> Color(0xFF1D4ED8)
+                        isBasic  -> Color(0xFF00E599)
+                        else     -> accentGold
+                    },
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
@@ -218,9 +239,17 @@ fun AddTransactionScreen(
 
             Text(
                 text = if (selectedType == TransactionType.INCOME) {
-                    if (isSpidey) "Income Category ⚡" else "Bounty Gain Category 💰"
+                    when {
+                        isSpidey -> "Income Category ⚡"
+                        isBasic  -> "Income Category 📈"
+                        else     -> "Bounty Gain Category 💰"
+                    }
                 } else {
-                    if (isSpidey) "Expense Category 🕸️" else "Bounty Loss Category ⚓"
+                    when {
+                        isSpidey -> "Expense Category 🕸️"
+                        isBasic  -> "Expense Category 💳"
+                        else     -> "Bounty Loss Category ⚓"
+                    }
                 },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
@@ -239,6 +268,7 @@ fun AddTransactionScreen(
                 categories = availableCategories,
                 selectedCategory = selectedCategory,
                 isSpidey = isSpidey,
+                isBasic = isBasic,
                 onSelect = { selectedCategory = it }
             )
 
@@ -246,12 +276,11 @@ fun AddTransactionScreen(
 
             // Creative Save Button
             val isFormValid = amount.isNotBlank() && title.isNotBlank()
-            val saveGradient = if (isSpidey) {
-                listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
-            } else if (selectedType == TransactionType.INCOME) {
-                listOf(accentOcean, accentGold)
-            } else {
-                listOf(accentCrimson, Color(0xFFE85D04))
+            val saveGradient = when {
+                isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
+                isBasic  -> listOf(Color(0xFF00E599), Color(0xFF00D2FF))
+                selectedType == TransactionType.INCOME -> listOf(accentOcean, accentGold)
+                else -> listOf(accentCrimson, Color(0xFFE85D04))
             }
 
             Box(
@@ -279,7 +308,11 @@ fun AddTransactionScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (isSpidey) "SAVE ENTRY 🕸️" else "LOG TO PIRATE LOGBOOK 📜",
+                    text = when {
+                        isSpidey -> "SAVE ENTRY 🕸️"
+                        isBasic  -> "SAVE TRANSACTION 🚀"
+                        else     -> "LOG TO PIRATE LOGBOOK 📜"
+                    },
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = if (isFormValid) Color.White else Color.White.copy(alpha = 0.5f)
                 )
@@ -328,6 +361,7 @@ private fun CategoryGrid(
     categories: List<Category>,
     selectedCategory: Category,
     isSpidey: Boolean,
+    isBasic: Boolean = false,
     onSelect: (Category) -> Unit
 ) {
     // Split into rows of 3
@@ -343,6 +377,7 @@ private fun CategoryGrid(
                         category = category,
                         selected = category == selectedCategory,
                         isSpidey = isSpidey,
+                        isBasic = isBasic,
                         onClick = { onSelect(category) },
                         modifier = Modifier.weight(1f)
                     )
@@ -361,29 +396,30 @@ private fun CategoryCard(
     category: Category,
     selected: Boolean,
     isSpidey: Boolean,
+    isBasic: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val emoji = when (category) {
-        Category.FOOD          -> if (isSpidey) "🍕" else "🍖"
-        Category.TRANSPORT     -> if (isSpidey) "🚇" else "🚢"
-        Category.BILLS         -> if (isSpidey) "📜" else "📋"
-        Category.ENTERTAINMENT -> if (isSpidey) "🎮" else "🎪"
-        Category.HEALTH        -> if (isSpidey) "🧪" else "💊"
-        Category.SHOPPING      -> if (isSpidey) "🛍️" else "💎"
-        Category.EDUCATION     -> if (isSpidey) "📚" else "📖"
-        Category.GIFTS         -> if (isSpidey) "🎁" else "🎁"
-        Category.OTHER         -> if (isSpidey) "🧭" else "🧭"
-        Category.SALARY        -> if (isSpidey) "💼" else "💰"
-        Category.INVESTMENT    -> if (isSpidey) "📈" else "📊"
-        Category.FREELANCE     -> if (isSpidey) "🤝" else "📜"
-        Category.BUSINESS      -> if (isSpidey) "🏪" else "🪙"
-        Category.BONUS         -> if (isSpidey) "🏆" else "🏆"
-        Category.INTEREST      -> if (isSpidey) "🏦" else "⚓"
-        Category.OTHER_INCOME  -> if (isSpidey) "💵" else "💎"
+        Category.FOOD          -> when { isSpidey -> "🍕"; isBasic -> "🛒"; else -> "🍖" }
+        Category.TRANSPORT     -> when { isSpidey -> "🚇"; isBasic -> "🚗"; else -> "🚢" }
+        Category.BILLS         -> when { isSpidey -> "📜"; isBasic -> "📄"; else -> "📋" }
+        Category.ENTERTAINMENT -> when { isSpidey -> "🎮"; isBasic -> "🎬"; else -> "🎪" }
+        Category.HEALTH        -> when { isSpidey -> "🧪"; isBasic -> "💊"; else -> "💊" }
+        Category.SHOPPING      -> when { isSpidey -> "🛍️"; isBasic -> "🛍️"; else -> "💎" }
+        Category.EDUCATION     -> when { isSpidey -> "📚"; isBasic -> "📚"; else -> "📖" }
+        Category.GIFTS         -> "🎁"
+        Category.OTHER         -> "📁"
+        Category.SALARY        -> "💼"
+        Category.INVESTMENT    -> "📈"
+        Category.FREELANCE     -> "💻"
+        Category.BUSINESS      -> "🏢"
+        Category.BONUS         -> "🏆"
+        Category.INTEREST      -> "🏦"
+        Category.OTHER_INCOME  -> "💵"
     }
 
-    val accentColor = if (isSpidey) Color(0xFFC1121F) else Color(0xFFF6C445)
+    val accentColor = when { isSpidey -> Color(0xFFC1121F); isBasic -> Color(0xFF00E599); else -> Color(0xFFF6C445) }
     val categoryColor = category.color
 
     Surface(

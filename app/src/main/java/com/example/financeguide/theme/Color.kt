@@ -90,27 +90,35 @@ val ChartColors = listOf(
 )
 
 // ─────────────────────────────────────────────────────────
-// Finance Pro — Basic Theme Palette
-// Clean modern dark UI: Indigo + Emerald + Near-Black
+// Finance Pro Theme Palette
+// High-tech Futuristic Fintech Dark UI: Electric Mint Emerald + Cyber Cyan + Radiant Gold + Obsidian Navy
 // ─────────────────────────────────────────────────────────
-val ProPrimary         = Color(0xFF6366F1) // Indigo-500 (primary accent)
-val ProPrimaryLight    = Color(0xFF818CF8) // Indigo-400
-val ProPrimaryDark     = Color(0xFF4338CA) // Indigo-700
-val ProOnPrimary       = Color(0xFFFFFFFF)
-val ProPrimaryContainer    = Color(0xFF1E1B4B) // Deep Indigo container
-val ProOnPrimaryContainer  = Color(0xFFE0E7FF)
+val ProPrimary             = Color(0xFF00E599) // Electric Mint Emerald Primary Accent
+val ProPrimaryLight        = Color(0xFF5CFFB8) // Bright Mint
+val ProPrimaryDark         = Color(0xFF009966) // Deep Mint
+val ProOnPrimary           = Color(0xFF05130E) // Midnight Charcoal
+val ProPrimaryContainer    = Color(0xFF003822) // Deep Emerald Obsidian Container
+val ProOnPrimaryContainer  = Color(0xFFA6FFD7) // Soft Mint Text
 
-val ProSecondary           = Color(0xFF10B981) // Emerald-500 (income/success)
-val ProSecondaryLight      = Color(0xFF34D399) // Emerald-400
-val ProSecondaryDark       = Color(0xFF059669) // Emerald-600
-val ProOnSecondary         = Color(0xFF0F172A)
-val ProSecondaryContainer  = Color(0xFF064E3B)
-val ProOnSecondaryContainer = Color(0xFFD1FAE5)
+val ProSecondary           = Color(0xFF00D2FF) // Cyber Cyan Secondary Accent
+val ProSecondaryLight      = Color(0xFF70E4FF) // Bright Cyan
+val ProSecondaryDark       = Color(0xFF008BB8) // Deep Cyan
+val ProOnSecondary         = Color(0xFF04151C) // Midnight Charcoal
+val ProSecondaryContainer  = Color(0xFF003547) // Deep Cyan Obsidian Container
+val ProOnSecondaryContainer = Color(0xFFB8F5FF) // Soft Cyan Text
 
-val ProBackground      = Color(0xFF09090B) // Near-black
-val ProSurface         = Color(0xFF111115) // Card surface
-val ProSurfaceVariant  = Color(0xFF1C1C23) // Elevated card
-val ProSurfaceElevated = Color(0xFF26262F) // Popups / sheets
-val ProOutline         = Color(0xFF2E2E3A)
-val ProOnSurface       = Color(0xFFF1F5F9)
-val ProOnSurfaceVariant = Color(0xFF94A3B8)
+val ProTertiary            = Color(0xFFFFC72C) // Radiant Gold Accent
+val ProTertiaryLight       = Color(0xFFFFD970)
+val ProTertiaryDark        = Color(0xFFB88900)
+val ProOnTertiary          = Color(0xFF1F1600)
+val ProTertiaryContainer   = Color(0xFF382A00)
+val ProOnTertiaryContainer = Color(0xFFFFEEB3)
+
+val ProBackground          = Color(0xFF080D1A) // Deep Obsidian Dark Navy
+val ProSurface             = Color(0xFF0E1626) // Card surface
+val ProSurfaceVariant      = Color(0xFF172238) // Glass Slate Container
+val ProSurfaceElevated     = Color(0xFF1E2D4A) // Popups / Sheets
+val ProOutline             = Color(0xFF00E599).copy(alpha = 0.35f) // Electric Mint Outline
+val ProOnSurface           = Color(0xFFF8FAFC) // Pearl White Text
+val ProOnSurfaceVariant     = Color(0xFF94A3B8) // Cool Platinum Slate Subtitles
+

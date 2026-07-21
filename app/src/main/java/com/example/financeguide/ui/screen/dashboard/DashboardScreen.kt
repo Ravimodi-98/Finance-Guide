@@ -91,12 +91,14 @@ fun DashboardScreen(
                         IconButton(
                             onClick = onNavigateToAI
                         ) {
-                            if (strings.chatbotName == "Spider-Man") {
-                                com.example.financeguide.ui.components.SpiderManAvatar(
+                            when (strings.chatbotName) {
+                                "Spider-Man" -> com.example.financeguide.ui.components.SpiderManAvatar(
                                     modifier = Modifier.size(32.dp)
                                 )
-                            } else {
-                                Icon(
+                                "FinBot" -> com.example.financeguide.ui.screen.ai.FinBotAvatar(
+                                    modifier = Modifier.size(32.dp)
+                                )
+                                else -> Icon(
                                     imageVector = Icons.Rounded.Explore,
                                     contentDescription = "Finance Navigator",
                                     tint = com.example.financeguide.theme.Secondary,

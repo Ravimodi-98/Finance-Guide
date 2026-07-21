@@ -18,6 +18,7 @@ import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.Divider
@@ -85,34 +86,96 @@ fun SettingsScreen(
     }
 
     val currentCurrencyName = when (currencyCode) {
+        "INR"  -> "Rupees (₹)"
+        "USD"  -> "US Dollars ($)"
+        "EUR"  -> "Euros (€)"
+        "GBP"  -> "Pounds (£)"
+        "JPY"  -> "Yen (¥)"
         "BELI" -> "Beli (฿)"
-        "INR" -> "Rupees (₹)"
-        "USD" -> "Dollars ($)"
-        "GBP" -> "Pounds (£)"
-        else -> currencyCode
+        else   -> currencyCode
     }
 
     val isSpideyTheme = strings.chatbotName == "Spider-Man"
+    val isBasicTheme = strings.chatbotName == "FinBot"
 
-    val displayUserName = if (userName == "Guest Pirate" && isSpideyTheme) "Web Slinger Agent" else userName
-    val displayUserEmail = if (userEmail == "guest@strawhats.org" && isSpideyTheme) "agent@shield.org" else userEmail
+    val displayUserName = when {
+        userName == "Guest Pirate" && isSpideyTheme -> "Web Slinger Agent"
+        userName == "Guest Pirate" && isBasicTheme  -> "Finance Investor"
+        userName == "Monkey D. Luffy" && isBasicTheme -> "Finance Pro User"
+        else -> userName
+    }
+
+    val displayUserEmail = when {
+        userEmail == "guest@strawhats.org" && isSpideyTheme -> "agent@shield.org"
+        userEmail == "guest@strawhats.org" && isBasicTheme  -> "pro.user@financeguide.ai"
+        userEmail == "luffy@strawhats.org" && isBasicTheme  -> "pro.user@financeguide.ai"
+        else -> userEmail
+    }
 
     val avatarEmoji = when (userAvatar) {
-        "Spidey", "Luffy" -> if (isSpideyTheme) "🕷️" else "🍖"
-        "Miles", "Zoro" -> if (isSpideyTheme) "⚡" else "⚔️"
-        "Gwen", "Nami" -> if (isSpideyTheme) "🕸️" else "🍊"
-        "Peter", "Sanji" -> if (isSpideyTheme) "📷" else "🍳"
-        "MJ", "Chopper" -> if (isSpideyTheme) "💖" else "🌸"
-        else -> if (isSpideyTheme) "🕷️" else "🍖"
+        "Spidey", "Luffy", "Investor" -> when {
+            isSpideyTheme -> "🕷️"
+            isBasicTheme  -> "💼"
+            else          -> "🍖"
+        }
+        "Miles", "Zoro", "Trader" -> when {
+            isSpideyTheme -> "⚡"
+            isBasicTheme  -> "📈"
+            else          -> "⚔️"
+        }
+        "Gwen", "Nami", "Analyst" -> when {
+            isSpideyTheme -> "🕸️"
+            isBasicTheme  -> "📊"
+            else          -> "🍊"
+        }
+        "Peter", "Sanji", "Planner" -> when {
+            isSpideyTheme -> "📷"
+            isBasicTheme  -> "🏛️"
+            else          -> "🍳"
+        }
+        "MJ", "Chopper", "Executive" -> when {
+            isSpideyTheme -> "💖"
+            isBasicTheme  -> "💎"
+            else          -> "🌸"
+        }
+        else -> when {
+            isSpideyTheme -> "🕷️"
+            isBasicTheme  -> "💼"
+            else          -> "🍖"
+        }
     }
 
     val avatarColor = when (userAvatar) {
-        "Spidey", "Luffy" -> if (isSpideyTheme) Color(0xFFE50914) else Color(0xFFD00000)
-        "Miles", "Zoro" -> if (isSpideyTheme) Color(0xFFFF1744) else Color(0xFF2A9D8F)
-        "Gwen", "Nami" -> if (isSpideyTheme) Color(0xFFF48FB1) else Color(0xFFFFB703)
-        "Peter", "Sanji" -> if (isSpideyTheme) Color(0xFF0056B3) else Color(0xFF3B82F6)
-        "MJ", "Chopper" -> if (isSpideyTheme) Color(0xFFE91E63) else Color(0xFFEC4899)
-        else -> if (isSpideyTheme) Color(0xFFE50914) else Color(0xFFFFB703)
+        "Spidey", "Luffy", "Investor" -> when {
+            isSpideyTheme -> Color(0xFFE50914)
+            isBasicTheme  -> Color(0xFF00E599)
+            else          -> Color(0xFFD00000)
+        }
+        "Miles", "Zoro", "Trader" -> when {
+            isSpideyTheme -> Color(0xFFFF1744)
+            isBasicTheme  -> Color(0xFF00D2FF)
+            else          -> Color(0xFF2A9D8F)
+        }
+        "Gwen", "Nami", "Analyst" -> when {
+            isSpideyTheme -> Color(0xFFF48FB1)
+            isBasicTheme  -> Color(0xFF8B5CF6)
+            else          -> Color(0xFFFFB703)
+        }
+        "Peter", "Sanji", "Planner" -> when {
+            isSpideyTheme -> Color(0xFF0056B3)
+            isBasicTheme  -> Color(0xFFFFC72C)
+            else          -> Color(0xFF3B82F6)
+        }
+        "MJ", "Chopper", "Executive" -> when {
+            isSpideyTheme -> Color(0xFFE91E63)
+            isBasicTheme  -> Color(0xFF38BDF8)
+            else          -> Color(0xFFEC4899)
+        }
+        else -> when {
+            isSpideyTheme -> Color(0xFFE50914)
+            isBasicTheme  -> Color(0xFF00E599)
+            else          -> Color(0xFFFFB703)
+        }
     }
 
     var notificationsEnabled by remember { mutableStateOf(true) }
@@ -218,6 +281,16 @@ fun SettingsScreen(
                 subtitle = currentCurrencyName,
                 onClick = { showCurrencyDialog = true }
             )
+
+            SettingsClickableItem(
+                icon = Icons.Rounded.Explore,
+                title = "Replay App Tour",
+                subtitle = "Watch the first-time feature tour again",
+                onClick = {
+                    settingsManager.setOnboardingCompleted(false)
+                    Toast.makeText(context, "Starting App Tour...", Toast.LENGTH_SHORT).show()
+                }
+            )
             
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             SettingsSection(title = "Data")
@@ -297,21 +370,29 @@ fun SettingsScreen(
             text = {
                 Column {
                     TextButton(onClick = { 
-                        settingsManager.setCurrency("BELI")
-                        showCurrencyDialog = false
-                    }) { Text("Beli (฿) [One Piece]") }
-                    TextButton(onClick = { 
                         settingsManager.setCurrency("INR")
                         showCurrencyDialog = false
-                    }) { Text("Rupees (₹) [India]") }
+                    }) { Text("Rupees (₹) - India") }
                     TextButton(onClick = { 
                         settingsManager.setCurrency("USD")
                         showCurrencyDialog = false
-                    }) { Text("Dollars ($) [US]") }
+                    }) { Text("US Dollars ($) - Global") }
+                    TextButton(onClick = { 
+                        settingsManager.setCurrency("EUR")
+                        showCurrencyDialog = false
+                    }) { Text("Euros (€) - Europe") }
                     TextButton(onClick = { 
                         settingsManager.setCurrency("GBP")
                         showCurrencyDialog = false
-                    }) { Text("Pounds (£) [UK]") }
+                    }) { Text("Pounds (£) - UK") }
+                    TextButton(onClick = { 
+                        settingsManager.setCurrency("JPY")
+                        showCurrencyDialog = false
+                    }) { Text("Yen (¥) - Japan") }
+                    TextButton(onClick = { 
+                        settingsManager.setCurrency("BELI")
+                        showCurrencyDialog = false
+                    }) { Text("Beli (฿) - Anime") }
                 }
             },
             confirmButton = {},
@@ -401,16 +482,22 @@ fun SettingsScreen(
         var editEmail by remember { mutableStateOf(displayUserEmail) }
         var editAvatar by remember { mutableStateOf(userAvatar) }
 
-        val avatarsList = if (isSpideyTheme) {
-            listOf(
+        val avatarsList = when {
+            isSpideyTheme -> listOf(
                 Pair("Spidey", "🕷️"),
                 Pair("Miles", "⚡"),
                 Pair("Gwen", "🕸️"),
                 Pair("Peter", "📷"),
                 Pair("MJ", "💖")
             )
-        } else {
-            listOf(
+            isBasicTheme -> listOf(
+                Pair("Investor", "💼"),
+                Pair("Trader", "📈"),
+                Pair("Analyst", "📊"),
+                Pair("Planner", "🏛️"),
+                Pair("Executive", "💎")
+            )
+            else -> listOf(
                 Pair("Luffy", "🍖"),
                 Pair("Zoro", "⚔️"),
                 Pair("Nami", "🍊"),
@@ -421,23 +508,23 @@ fun SettingsScreen(
 
         AlertDialog(
             onDismissRequest = { showEditProfileDialog = false },
-            title = { Text(if (isSpideyTheme) "Edit Hero Profile" else "Edit Crew Profile") },
+            title = { Text(when { isSpideyTheme -> "Edit Hero Profile"; isBasicTheme -> "Edit Profile"; else -> "Edit Crew Profile" }) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = editName,
                         onValueChange = { editName = it },
-                        label = { Text(if (isSpideyTheme) "Hero Name" else "Pirate Name") },
+                        label = { Text(when { isSpideyTheme -> "Hero Name"; isBasicTheme -> "Full Name"; else -> "Pirate Name" }) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
                         value = editEmail,
                         onValueChange = { editEmail = it },
-                        label = { Text(if (isSpideyTheme) "Hero Email" else "Crew Email") },
+                        label = { Text(when { isSpideyTheme -> "Hero Email"; isBasicTheme -> "Email Address"; else -> "Crew Email" }) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(
-                        text = if (isSpideyTheme) "Hero Identity" else "Crew Identity",
+                        text = when { isSpideyTheme -> "Hero Identity"; isBasicTheme -> "Profile Avatar"; else -> "Crew Identity" },
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(top = 8.dp)

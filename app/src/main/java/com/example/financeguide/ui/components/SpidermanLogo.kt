@@ -30,17 +30,112 @@ import com.example.financeguide.R
 
 /**
  * Theme-aware launcher logo component.
- * Displays StrawHatIcon for One Piece, and SpidermanLogoIcon for Spider-Man.
+ * Displays SpidermanLogoIcon for Spider-Man, FinanceProLogoIcon for Finance Pro, and StrawHatIcon for One Piece.
  */
 @Composable
 fun ThemeAppLogo(
     modifier: Modifier = Modifier,
-    themeMode: String = "spiderman"
+    themeMode: String = "basic"
 ) {
-    if (themeMode == "spiderman") {
-        SpidermanLogoIcon(modifier = modifier)
-    } else {
-        StrawHatIcon(modifier = modifier)
+    when (themeMode) {
+        "spiderman" -> SpidermanLogoIcon(modifier = modifier)
+        "basic"     -> FinanceProLogoIcon(modifier = modifier)
+        else        -> StrawHatIcon(modifier = modifier)
+    }
+}
+
+/**
+ * Renders a high-tech modern Finance Pro Shield & Growth Trend Logo.
+ */
+@Composable
+fun FinanceProLogoIcon(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val center = Offset(w * 0.5f, h * 0.5f)
+        val radius = size.minDimension / 2
+
+        // Outer Dark Slate Circle with Mint Emerald Glow Rim
+        drawCircle(
+            color = Color(0xFF00E599),
+            radius = radius
+        )
+        drawCircle(
+            color = Color(0xFF080D1A),
+            radius = radius * 0.92f
+        )
+        // Inner Glass Slate Disk
+        drawCircle(
+            color = Color(0xFF172238),
+            radius = radius * 0.82f
+        )
+
+        // Geometric Shield Path
+        val shieldPath = Path().apply {
+            moveTo(w * 0.5f, h * 0.22f)
+            lineTo(w * 0.78f, h * 0.32f)
+            lineTo(w * 0.78f, h * 0.58f)
+            cubicTo(
+                w * 0.78f, h * 0.76f,
+                w * 0.5f, h * 0.86f,
+                w * 0.5f, h * 0.86f
+            )
+            cubicTo(
+                w * 0.5f, h * 0.86f,
+                w * 0.22f, h * 0.76f,
+                w * 0.22f, h * 0.58f
+            )
+            lineTo(w * 0.22f, h * 0.32f)
+            close()
+        }
+        drawPath(
+            path = shieldPath,
+            color = Color(0xFF003822)
+        )
+        drawPath(
+            path = shieldPath,
+            color = Color(0xFF00E599),
+            style = Stroke(width = size.minDimension * 0.035f)
+        )
+
+        // Ascending Growth Chart Trendline inside Shield
+        val chartPath = Path().apply {
+            moveTo(w * 0.32f, h * 0.65f)
+            lineTo(w * 0.44f, h * 0.55f)
+            lineTo(w * 0.54f, h * 0.60f)
+            lineTo(w * 0.68f, h * 0.38f)
+        }
+        drawPath(
+            path = chartPath,
+            color = Color(0xFF00D2FF),
+            style = Stroke(
+                width = size.minDimension * 0.055f,
+                cap = StrokeCap.Round
+            )
+        )
+
+        // Growth Trend Arrowhead at Top-Right
+        val arrowPath = Path().apply {
+            moveTo(w * 0.68f, h * 0.38f)
+            lineTo(w * 0.58f, h * 0.38f)
+            moveTo(w * 0.68f, h * 0.38f)
+            lineTo(w * 0.68f, h * 0.48f)
+        }
+        drawPath(
+            path = arrowPath,
+            color = Color(0xFF00D2FF),
+            style = Stroke(
+                width = size.minDimension * 0.055f,
+                cap = StrokeCap.Round
+            )
+        )
+
+        // Central Radiant Gold Coin Node
+        drawCircle(
+            color = Color(0xFFFFC72C),
+            radius = radius * 0.12f,
+            center = Offset(w * 0.68f, h * 0.38f)
+        )
     }
 }
 

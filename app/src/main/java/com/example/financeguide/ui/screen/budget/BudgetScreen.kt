@@ -87,29 +87,27 @@ fun BudgetScreen(
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
-            if (isSpidey) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
-                            )
-                        )
-                        .clickable { showAddDialog = true },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Rounded.Add, contentDescription = "Add Budget", tint = Color.White)
-                }
-            } else {
-                FloatingActionButton(
-                    onClick = { showAddDialog = true },
-                    containerColor = accentOcean,
-                    contentColor = Color.White
-                ) {
-                    Icon(Icons.Rounded.Add, contentDescription = "Add Budget")
-                }
+            val fabGradient = when {
+                isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8))
+                isBasic  -> listOf(Color(0xFF00E599), Color(0xFF00D2FF))
+                else     -> listOf(Color(0xFF1E88E5), Color(0xFFFFC72C))
+            }
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(
+                        brush = Brush.linearGradient(colors = fabGradient)
+                    )
+                    .clickable { showAddDialog = true },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Add,
+                    contentDescription = "Add Budget",
+                    tint = if (isBasic) Color(0xFF080D1A) else Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
     ) { paddingValues ->
@@ -123,12 +121,20 @@ fun BudgetScreen(
             item {
                 Column(modifier = Modifier.animateEnter(animIndex++)) {
                     Text(
-                        text = if (isSpidey) "Hero Limits & Budgets 🕸️" else "Bounty Limits (Budgets) ⚓",
+                        text = when {
+                            isSpidey -> "Hero Limits & Budgets 🕸️"
+                            isBasic  -> "Budget Plans & Limits 📊"
+                            else     -> "Bounty Limits (Budgets) ⚓"
+                        },
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = if (isSpidey) "Set spending caps to protect your financial ledger" else "Set category spending limits to guard your treasure chest on the Grand Line",
+                        text = when {
+                            isSpidey -> "Set spending caps to protect your financial ledger"
+                            isBasic  -> "Set monthly category limits to stay in full financial control"
+                            else     -> "Set category spending limits to guard your treasure chest on the Grand Line"
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 4.dp)
@@ -149,7 +155,7 @@ fun BudgetScreen(
                             1.dp,
                             when {
                                 isSpidey -> Color(0xFF1D4ED8).copy(alpha = 0.4f)
-                                isBasic  -> Color(0xFF6366F1).copy(alpha = 0.4f)
+                                isBasic  -> Color(0xFF00E599).copy(alpha = 0.4f)
                                 else     -> accentGold.copy(alpha = 0.4f)
                             }
                         )
@@ -161,12 +167,12 @@ fun BudgetScreen(
                             BudgetEmptyIcon(
                                 accentColor = when {
                                     isSpidey -> Color(0xFFC1121F)
-                                    isBasic  -> Color(0xFF6366F1)
+                                    isBasic  -> Color(0xFF00E599)
                                     else     -> accentGold
                                 },
                                 secondaryColor = when {
                                     isSpidey -> Color(0xFF1D4ED8)
-                                    isBasic  -> Color(0xFF10B981)
+                                    isBasic  -> Color(0xFF00D2FF)
                                     else     -> accentOcean
                                 },
                                 modifier = Modifier.size(80.dp)
@@ -175,7 +181,11 @@ fun BudgetScreen(
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
-                                text = if (isSpidey) "No Hero Budgets Set Yet!" else "No Bounty Limits Created Yet!",
+                                text = when {
+                                    isSpidey -> "No Hero Budgets Set Yet!"
+                                    isBasic  -> "No Budgets Created Yet!"
+                                    else     -> "No Bounty Limits Created Yet!"
+                                },
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -183,7 +193,11 @@ fun BudgetScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text(
-                                text = if (isSpidey) "Set monthly spending limits for Food, Transport, and Shopping to stay in full control." else "Guard your Berry bounty by creating budget limits for Food, Ship Transport, Entertainment, and more!",
+                                text = when {
+                                    isSpidey -> "Set monthly spending limits for Food, Transport, and Shopping to stay in full control."
+                                    isBasic  -> "Set monthly spending limits for Food, Transport, Shopping, and Bills to manage your spending."
+                                    else     -> "Guard your Berry bounty by creating budget limits for Food, Ship Transport, Entertainment, and more!"
+                                },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(horizontal = 8.dp)
@@ -308,11 +322,18 @@ fun CreativeAddBudgetDialog(
     val accentGold = Color(0xFFF6C445)
     val accentOcean = Color(0xFF1E88E5)
 
+    val strings = LocalThemeStrings.current
+    val isBasic = strings.chatbotName == "FinBot"
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = if (isSpidey) "Set Hero Budget Cap 🕸️" else "Set Bounty Limit ⚓",
+                text = when {
+                    isSpidey -> "Set Hero Budget Cap 🕸️"
+                    isBasic  -> "Create Budget Limit 📊"
+                    else     -> "Set Bounty Limit ⚓"
+                },
                 fontWeight = FontWeight.Bold
             )
         },
@@ -334,15 +355,15 @@ fun CreativeAddBudgetDialog(
                     Category.expenseCategories().forEach { category ->
                         val isSelected = category == selectedCategory
                         val categoryEmoji = when (category) {
-                            Category.FOOD -> if (isSpidey) "🍕" else "🍖"
-                            Category.TRANSPORT -> if (isSpidey) "🕸️" else "🚢"
-                            Category.BILLS -> if (isSpidey) "📜" else "📜"
-                            Category.ENTERTAINMENT -> if (isSpidey) "🎮" else "🎪"
-                            Category.HEALTH -> if (isSpidey) "🧪" else "💊"
-                            Category.SHOPPING -> if (isSpidey) "🛍️" else "💎"
-                            Category.EDUCATION -> if (isSpidey) "📚" else "📖"
-                            Category.GIFTS -> if (isSpidey) "🎁" else "🎁"
-                            else -> if (isSpidey) "🧭" else "🧭"
+                            Category.FOOD          -> when { isSpidey -> "🍕"; isBasic -> "🛒"; else -> "🍖" }
+                            Category.TRANSPORT     -> when { isSpidey -> "🕸️"; isBasic -> "🚗"; else -> "🚢" }
+                            Category.BILLS         -> when { isSpidey -> "📜"; isBasic -> "📄"; else -> "📜" }
+                            Category.ENTERTAINMENT -> when { isSpidey -> "🎮"; isBasic -> "🎬"; else -> "🎪" }
+                            Category.HEALTH        -> when { isSpidey -> "🧪"; isBasic -> "💊"; else -> "💊" }
+                            Category.SHOPPING      -> when { isSpidey -> "🛍️"; isBasic -> "🛍️"; else -> "💎" }
+                            Category.EDUCATION     -> when { isSpidey -> "📚"; isBasic -> "📚"; else -> "📖" }
+                            Category.OTHER         -> "📁"
+                            else                   -> "💼"
                         }
 
                         Surface(

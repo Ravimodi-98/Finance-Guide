@@ -6,12 +6,14 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.financeguide.data.local.dao.BudgetDao
 import com.example.financeguide.data.local.dao.TransactionDao
-import com.example.financeguide.data.local.entity.BudgetEntity
-import com.example.financeguide.data.local.entity.TransactionEntity
+import com.example.financeguide.data.local.entity.*
 
 @Database(
-    entities = [TransactionEntity::class, BudgetEntity::class],
-    version = 1,
+    entities = [
+        TransactionEntity::class,
+        BudgetEntity::class
+    ],
+    version = 3,
     exportSchema = false
 )
 abstract class FinanceDatabase : RoomDatabase() {
@@ -28,7 +30,9 @@ abstract class FinanceDatabase : RoomDatabase() {
                     context.applicationContext,
                     FinanceDatabase::class.java,
                     "finance_guide_db"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }

@@ -60,6 +60,7 @@ fun InsightsScreen(
     val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
     val strings = LocalThemeStrings.current
     val isSpidey = strings.chatbotName == "Spider-Man"
+    val isBasic  = strings.chatbotName == "FinBot"
     var selectedBreakdownType by remember { mutableStateOf(TransactionType.INCOME) }
     var animIndex = 0
 
@@ -148,13 +149,21 @@ fun InsightsScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 SummaryMetricCard(
-                    title = if (isSpidey) "Income ⚡" else "Bounty Gain 💰",
+                    title = when {
+                        isSpidey -> "Income ⚡"
+                        isBasic  -> "Total Income 📈"
+                        else     -> "Bounty Gain 💰"
+                    },
                     amount = formatAmountString(summary.totalIncome, currency),
                     color = accentYellowGreen,
                     modifier = Modifier.weight(1f)
                 )
                 SummaryMetricCard(
-                    title = if (isSpidey) "Expense 🕸️" else "Bounty Loss ⚓",
+                    title = when {
+                        isSpidey -> "Expense 🕸️"
+                        isBasic  -> "Total Expense 💳"
+                        else     -> "Bounty Loss ⚓"
+                    },
                     amount = formatAmountString(summary.totalExpense, currency),
                     color = accentCrimson,
                     modifier = Modifier.weight(1f)
@@ -172,7 +181,7 @@ fun InsightsScreen(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                 border = BorderStroke(
                     1.dp,
-                    if (isSpidey) Color(0xFF1D4ED8).copy(alpha = 0.4f) else accentGold.copy(alpha = 0.4f)
+                    if (isSpidey) Color(0xFF1D4ED8).copy(alpha = 0.4f) else if (isBasic) Color(0xFF00E599).copy(alpha = 0.4f) else accentGold.copy(alpha = 0.4f)
                 )
             ) {
                 Column(
@@ -189,14 +198,22 @@ fun InsightsScreen(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         PillTab(
-                            text = if (isSpidey) "Incomes ⚡" else "Bounty Gain 💰",
+                            text = when {
+                                isSpidey -> "Incomes ⚡"
+                                isBasic  -> "Income 📈"
+                                else     -> "Bounty Gain 💰"
+                            },
                             selected = selectedBreakdownType == TransactionType.INCOME,
                             selectedColor = accentYellowGreen,
                             onClick = { selectedBreakdownType = TransactionType.INCOME },
                             modifier = Modifier.weight(1f)
                         )
                         PillTab(
-                            text = if (isSpidey) "Expenses 🕸️" else "Bounty Loss ⚓",
+                            text = when {
+                                isSpidey -> "Expenses 🕸️"
+                                isBasic  -> "Expenses 💳"
+                                else     -> "Bounty Loss ⚓"
+                            },
                             selected = selectedBreakdownType == TransactionType.EXPENSE,
                             selectedColor = accentCrimson,
                             onClick = { selectedBreakdownType = TransactionType.EXPENSE },
@@ -213,9 +230,17 @@ fun InsightsScreen(
                     }
 
                     val centerLabel = if (selectedBreakdownType == TransactionType.EXPENSE) {
-                        if (isSpidey) "WEB EXPENSE" else "BOUNTY SPENT"
+                        when {
+                            isSpidey -> "WEB EXPENSE"
+                            isBasic  -> "TOTAL EXPENSE"
+                            else     -> "BOUNTY SPENT"
+                        }
                     } else {
-                        if (isSpidey) "NET HERO BALANCE" else "NET BOUNTY BALANCE"
+                        when {
+                            isSpidey -> "NET HERO BALANCE"
+                            isBasic  -> "NET BALANCE"
+                            else     -> "NET BOUNTY BALANCE"
+                        }
                     }
 
                     // Centered Donut Chart (Yellow/Green color wheel for Income)
@@ -323,7 +348,11 @@ fun InsightsScreen(
                         }
                     } else {
                         Text(
-                            text = "No Bounty Losses Recorded Yet",
+                            text = when {
+                                isSpidey -> "No Web Expenses Recorded Yet"
+                                isBasic  -> "No Expenses Recorded Yet"
+                                else     -> "No Bounty Losses Recorded Yet"
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
@@ -335,7 +364,11 @@ fun InsightsScreen(
 
         item {
             Text(
-                text = if (isSpidey) "AI Web Suggestions 💡" else "Smart Crew Suggestions ⛵",
+                text = when {
+                    isSpidey -> "AI Web Suggestions 💡"
+                    isBasic  -> "FinBot Smart Insights 💡"
+                    else     -> "Smart Crew Suggestions ⛵"
+                },
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier

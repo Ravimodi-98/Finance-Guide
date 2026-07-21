@@ -30,6 +30,13 @@ fun BottomNavBar(
 ) {
     val strings = LocalThemeStrings.current
     val isSpidey = strings.chatbotName == "Spider-Man"
+    val isBasic = strings.chatbotName == "FinBot"
+
+    val fabGradient = when {
+        isSpidey -> listOf(Color(0xFFC1121F), Color(0xFF1D4ED8)) // Web Crimson to Spider Blue
+        isBasic  -> listOf(Color(0xFF00E599), Color(0xFF00D2FF)) // Mint Emerald to Cyber Cyan
+        else     -> listOf(Color(0xFF1E88E5), Color(0xFFFFC72C)) // Ocean Blue to Straw Hat Gold
+    }
 
     NavigationBar(
         modifier = modifier,
@@ -43,42 +50,22 @@ fun BottomNavBar(
                     selected = false,
                     onClick = { onNavigateToDestination(destination) },
                     icon = {
-                        if (isSpidey) {
-                            Box(
-                                modifier = Modifier
-                                    .offset(y = (-16).dp)
-                                    .size(56.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        brush = Brush.linearGradient(
-                                            colors = listOf(
-                                                Color(0xFFC1121F),
-                                                Color(0xFF1D4ED8)
-                                            )
-                                        )
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = destination.icon,
-                                    contentDescription = destination.title,
-                                    tint = Color.White
-                                )
-                            }
-                        } else {
-                            Surface(
-                                modifier = Modifier
-                                    .offset(y = (-16).dp)
-                                    .size(56.dp),
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary,
-                                shadowElevation = 4.dp
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(destination.icon, contentDescription = destination.title)
-                                }
-                            }
+                        Box(
+                            modifier = Modifier
+                                .offset(y = (-16).dp)
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    brush = Brush.linearGradient(colors = fabGradient)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = destination.icon,
+                                contentDescription = destination.title,
+                                tint = if (isBasic) Color(0xFF080D1A) else Color.White,
+                                modifier = Modifier.size(28.dp)
+                            )
                         }
                     },
                     label = { Text("") },

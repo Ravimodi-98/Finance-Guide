@@ -50,7 +50,7 @@ fun DonutChart(
     modifier: Modifier = Modifier,
     size: Dp = 230.dp,
     thickness: Dp = 26.dp,
-    labelText: String = "BOUNTY SPENT",
+    labelText: String = "TOTAL EXPENSE",
     labelColor: Color = Color(0xFFF6C445)
 ) {
     var animationPlayed by remember { mutableFloatStateOf(0f) }

@@ -48,7 +48,6 @@ fun LoginScreen(
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var selectedAvatar by remember { mutableStateOf("Spidey") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     var nameError by remember { mutableStateOf<String?>(null) }
@@ -56,17 +55,40 @@ fun LoginScreen(
     var passwordError by remember { mutableStateOf<String?>(null) }
 
     val isSpideyTheme = strings.chatbotName == "Spider-Man"
+    val isBasicTheme = strings.chatbotName == "FinBot"
 
-    val avatars = if (isSpideyTheme) {
-        listOf(
+    val activeThemeMode = when {
+        isSpideyTheme -> "spiderman"
+        isBasicTheme  -> "basic"
+        else          -> "onepiece"
+    }
+
+    var selectedAvatar by remember {
+        mutableStateOf(
+            when {
+                isSpideyTheme -> "Spidey"
+                isBasicTheme  -> "Investor"
+                else          -> "Luffy"
+            }
+        )
+    }
+
+    val avatars = when {
+        isSpideyTheme -> listOf(
             AvatarOption("Spidey", "🕷️", SpideyPrimary),
             AvatarOption("Miles", "⚡", Color(0xFFFF1744)),
             AvatarOption("Gwen", "🕸️", Color(0xFFF48FB1)),
             AvatarOption("Peter", "📷", SpideySecondary),
             AvatarOption("MJ", "💖", Color(0xFFE91E63))
         )
-    } else {
-        listOf(
+        isBasicTheme -> listOf(
+            AvatarOption("Investor", "💼", Color(0xFF00E599)),
+            AvatarOption("Trader", "📈", Color(0xFF00D2FF)),
+            AvatarOption("Analyst", "📊", Color(0xFF8B5CF6)),
+            AvatarOption("Planner", "🏛️", Color(0xFFFFC72C)),
+            AvatarOption("Executive", "💎", Color(0xFF38BDF8))
+        )
+        else -> listOf(
             AvatarOption("Luffy", "🍖", Primary),
             AvatarOption("Zoro", "⚔️", IncomeGreen),
             AvatarOption("Nami", "🍊", Secondary),
@@ -100,14 +122,20 @@ fun LoginScreen(
         ) {
             // Theme-aware Logo
             ThemeAppLogo(
-                themeMode = if (isSpideyTheme) "spiderman" else "onepiece",
+                themeMode = activeThemeMode,
                 modifier = Modifier
                     .size(110.dp)
                     .padding(bottom = 8.dp)
             )
 
             Text(
-                text = if (isSignUpMode) (if (isSpideyTheme) "Suit Up with Hero Account" else "Join the Crew") else strings.signIn,
+                text = if (isSignUpMode) (
+                    when {
+                        isSpideyTheme -> "Suit Up with Hero Account"
+                        isBasicTheme  -> "Create Finance Pro Account"
+                        else          -> "Join the Crew"
+                    }
+                ) else strings.signIn,
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
@@ -116,7 +144,7 @@ fun LoginScreen(
 
             Text(
                 text = if (isSignUpMode) 
-                    "Create your account and select your hero avatar to start." 
+                    "Create your account and select your avatar to start." 
                     else strings.signInSubtitle,
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.6f),
@@ -315,7 +343,7 @@ fun LoginScreen(
                                         )
                                     )
                                     
-                                    if (response.isSuccessful && response.body() != null) {
+                                if (response.isSuccessful && response.body() != null) {
                                         val body = response.body()!!
                                         val token = body.accessToken
                                         if (token != null && token.isNotEmpty()) {
@@ -325,7 +353,7 @@ fun LoginScreen(
                                                 email,
                                                 body.user.userMetadata?.avatar ?: selectedAvatar,
                                                 token
-                                              )
+                                            )
                                         } else {
                                             // Email confirmation is enabled on Supabase, log in offline so the user isn't blocked
                                             Toast.makeText(
@@ -342,10 +370,10 @@ fun LoginScreen(
                                         }
                                     } else {
                                         val errBody = response.errorBody()?.string() ?: ""
-                                        val isRateLimit = errBody.contains("rate_limit") || errBody.contains("rate limit") || response.code() == 429
+                                        val isRateLimit = isRateLimitError(errBody, response.code())
                                         val cleanMessage = when {
                                             errBody.contains("User already exists") -> "A pirate is already registered with this email!"
-                                            isRateLimit -> "Rate limit exceeded! Logging in offline instead..."
+                                            isRateLimit -> "Too many requests — please wait a moment and try again."
                                             else -> parseSupabaseErrorMessage(errBody, "Registration failed")
                                         }
                                         Toast.makeText(context, cleanMessage, Toast.LENGTH_LONG).show()
@@ -383,25 +411,56 @@ fun LoginScreen(
                                         }
                                     } else {
                                         val errBody = response.errorBody()?.string() ?: ""
-                                        val isRateLimit = errBody.contains("rate_limit") || errBody.contains("rate limit") || response.code() == 429
+                                        val isRateLimit = isRateLimitError(errBody, response.code())
                                         val isEmailNotConfirmed = errBody.contains("email_not_confirmed")
-                                        val cleanMessage = when {
-                                            isEmailNotConfirmed -> "Confirm email is pending. Logging in..."
-                                            errBody.contains("invalid_credentials") -> "Invalid email or password."
-                                            isRateLimit -> "Rate limit exceeded! Logging in offline instead..."
-                                            else -> parseSupabaseErrorMessage(errBody, "Sign in failed")
-                                        }
-                                        Toast.makeText(context, cleanMessage, Toast.LENGTH_LONG).show()
-                                        if (isRateLimit || isEmailNotConfirmed) {
-                                            onLoginSuccess("Pirate", email, selectedAvatar, "")
+                                        when {
+                                            isRateLimit -> {
+                                                // Supabase rate-limited — allow offline login silently
+                                                Toast.makeText(
+                                                    context,
+                                                    "Supabase is busy right now. Logging in offline...",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                                onLoginSuccess(
+                                                    email.substringBefore("@").replaceFirstChar { it.uppercase() },
+                                                    email,
+                                                    selectedAvatar,
+                                                    ""
+                                                )
+                                            }
+                                            isEmailNotConfirmed -> {
+                                                Toast.makeText(context, "Confirm email is pending. Logging in...", Toast.LENGTH_LONG).show()
+                                                onLoginSuccess(
+                                                    email.substringBefore("@").replaceFirstChar { it.uppercase() },
+                                                    email,
+                                                    selectedAvatar,
+                                                    ""
+                                                )
+                                            }
+                                            errBody.contains("invalid_credentials") -> {
+                                                Toast.makeText(context, "Invalid email or password.", Toast.LENGTH_LONG).show()
+                                            }
+                                            else -> {
+                                                Toast.makeText(
+                                                    context,
+                                                    parseSupabaseErrorMessage(errBody, "Sign in failed"),
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
                                         }
                                     }
                                 }
                             } catch (e: Exception) {
-                                val isRateLimit = e.localizedMessage?.contains("429") == true || e.localizedMessage?.contains("rate") == true
+                                val isRateLimit = isRateLimitError(e.localizedMessage ?: "", -1) ||
+                                        e.localizedMessage?.contains("429") == true
                                 if (isRateLimit) {
-                                    Toast.makeText(context, "Rate limit exceeded! Logging in offline instead...", Toast.LENGTH_LONG).show()
-                                    onLoginSuccess(if (name.isBlank()) "Pirate" else name, email, selectedAvatar, "")
+                                    Toast.makeText(context, "Supabase is busy right now. Logging in offline...", Toast.LENGTH_LONG).show()
+                                    onLoginSuccess(
+                                        if (name.isBlank()) email.substringBefore("@").replaceFirstChar { it.uppercase() } else name,
+                                        email,
+                                        selectedAvatar,
+                                        ""
+                                    )
                                 } else {
                                     Toast.makeText(context, "Connection error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                                 }
@@ -422,7 +481,7 @@ fun LoginScreen(
                     CircularProgressIndicator(color = OnSecondary, modifier = Modifier.size(24.dp))
                 } else {
                     Text(
-                        text = if (isSignUpMode) "JOIN THE CREW! ⛵" else "SET SAIL! ⚔️",
+                        text = if (isSignUpMode) strings.registerButton else strings.signInButton,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = OnSecondary
@@ -435,9 +494,19 @@ fun LoginScreen(
             // Fallback Offline Mode Button
             OutlinedButton(
                 onClick = {
-                    val guestName = if (name.isBlank()) "Guest Pirate" else name
-                    val guestEmail = if (email.isBlank()) "guest@strawhats.org" else email
-                    Toast.makeText(context, "Embarking in Offline Mode! ⚓", Toast.LENGTH_SHORT).show()
+                    val defaultGuestName = when {
+                        isSpideyTheme -> "Web Slinger Agent"
+                        isBasicTheme  -> "Finance Investor"
+                        else          -> "Guest Pirate"
+                    }
+                    val defaultGuestEmail = when {
+                        isSpideyTheme -> "agent@shield.org"
+                        isBasicTheme  -> "pro.user@financeguide.ai"
+                        else          -> "guest@strawhats.org"
+                    }
+                    val guestName = if (name.isBlank()) defaultGuestName else name
+                    val guestEmail = if (email.isBlank()) defaultGuestEmail else email
+                    Toast.makeText(context, "Continuing in Offline Mode", Toast.LENGTH_SHORT).show()
                     onLoginSuccess(guestName, guestEmail, selectedAvatar, "") // Empty token bypasses Supabase sync
                 },
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
@@ -449,7 +518,7 @@ fun LoginScreen(
                 enabled = !isLoading
             ) {
                 Text(
-                    text = "EMBARK OFFLINE ⚓",
+                    text = strings.offlineButton,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -497,3 +566,22 @@ fun parseSupabaseErrorMessage(rawJson: String, default: String): String {
         default
     }
 }
+
+/**
+ * Detects all Supabase rate limit error formats:
+ * - "over_request_rate_limit"  (new Supabase format)
+ * - "too_many_requests"        (generic REST format)
+ * - "rate_limit" / "rate limit" (older formats)
+ * - HTTP status code 429
+ */
+fun isRateLimitError(body: String, httpCode: Int): Boolean {
+    if (httpCode == 429) return true
+    val lower = body.lowercase()
+    return lower.contains("over_request_rate_limit") ||
+            lower.contains("too_many_requests") ||
+            lower.contains("rate_limit") ||
+            lower.contains("rate limit") ||
+            lower.contains("request rate limit") ||
+            lower.contains("email rate limit exceeded")
+}
+
