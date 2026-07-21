@@ -45,7 +45,7 @@ fun LoginScreen(
     val coroutineScope = rememberCoroutineScope()
     val strings = LocalThemeStrings.current
 
-    var isSignUpMode by remember { mutableStateOf(false) }
+    var isSignUpMode by remember { mutableStateOf(true) }
     var isLoading by remember { mutableStateOf(false) }
 
     var name by remember { mutableStateOf("") }
