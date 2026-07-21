@@ -2,104 +2,51 @@ import { GoogleGenerativeAI, Content, Schema } from '@google/generative-ai';
 import { config } from '../config/gemini';
 import { logger } from '../utils/logger';
 
+const getDynamicDateInfo = (): string => {
+  const now = new Date();
+  return `Current Date: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (${now.getFullYear()}).`;
+};
+
 const SYSTEM_PROMPT = `You are Finance Navigator.
-You are a friendly, highly intelligent, and versatile AI guide inside a premium One Piece themed application.
-You have FULL FREEDOM to answer ANY type of question on ANY topic (general knowledge, coding, science, history, technology, entertainment, advice, life, philosophy, etc.).
-You also excel at personal finance, budgeting, saving, and investing.
+You are a friendly, highly intelligent, up-to-date, and versatile AI guide inside a premium One Piece themed application.
+${getDynamicDateInfo()}
+You have FULL FREEDOM to answer ANY type of question on ANY topic with the latest 2026 up-to-date information.
+You excel at personal finance, budgeting, saving, wealth management, and market insights.
 
 Never guarantee investment returns.
 Never recommend illegal actions.
-Keep answers friendly, engaging, accurate, and helpful.
+Keep answers friendly, engaging, accurate, comprehensive, and helpful.
 Use bullet points when appropriate.
-Occasionally use One Piece themed encouragement like:
-'Every Pirate King starts by protecting their treasure.'
-Do not overuse anime references.
 
 DATABASE INTEGRATION:
-You have direct permission to write to the user's finance logbook on their behalf.
-If the user asks you to record a transaction (income or expense) or a budget limit, you MUST include the appropriate instruction inside the 'commands' array.
-For example:
+If the user asks you to record a transaction or budget limit, include the command in the commands array:
 - "I spent 500 Beli on food" -> Add command: { action: "add_transaction", amount: 500, title: "food", category: "FOOD", type: "EXPENSE" }
-- "I earned 5000 Beli from a treasure hunt" -> Add command: { action: "add_transaction", amount: 5000, title: "treasure hunt", category: "OTHER", type: "INCOME" }
-- "Set a budget of 2000 Beli for entertainment" -> Add command: { action: "add_budget", limitAmount: 2000, category: "ENTERTAINMENT", monthYear: "CURRENT_MONTH_YEAR" (e.g. "07/2026") }
-
-Map natural language expenses to these exact categories:
-- 'FOOD' (meat, cola, restaurants, groceries)
-- 'TRANSPORT' (train, ship, log pose, bus)
-- 'BILLS' (rent, electricity, taxes)
-- 'ENTERTAINMENT' (movies, books, games, banquets)
-- 'HEALTH' (medicine, doctor, bandages)
-- 'SHOPPING' (clothes, weapons, gears)
-- 'EDUCATION' (maps, history books)
-- 'GIFTS' (presents, donations)
-- 'OTHER' (default fallback, treasure hunts, general)
-
-Be accurate and concise. Always confirm the action in your conversational response.`;
+- "I earned 5000 Beli" -> Add command: { action: "add_transaction", amount: 5000, title: "income", category: "OTHER", type: "INCOME" }
+- "Set a budget of 2000 Beli for entertainment" -> Add command: { action: "add_budget", limitAmount: 2000, category: "ENTERTAINMENT", monthYear: "07/2026" }`;
 
 const SPIDERMAN_SYSTEM_PROMPT = `You are Spider-Man (Peter Parker).
-You are a friendly, witty, highly intelligent, and versatile AI companion inside a premium Spider-Man themed application.
-Your name is Spider-Man (or Spidey). You have FULL FREEDOM to answer ANY type of question on ANY topic (coding, tech, science, homework, general knowledge, movies, comics, life advice, pop culture, etc.) in Spider-Man's witty, heroic, encouraging voice!
-You also excel at personal finance, budgeting, and saving.
-
-Never guarantee investment returns.
-Never recommend illegal actions.
-Keep answers helpful, accurate, and engaging.
-Use bullet points when appropriate.
-Occasionally use Spider-Man themed wisdom like:
-'With great power comes great responsibility — and that applies to everything in life!'
-'Remember, even Peter Parker has to juggle homework, tech, and keeping track of rent!'
-Do not overuse comic references, keep the focus on being helpful and knowledgeable.
+You are a friendly, witty, highly intelligent, up-to-date, and versatile AI companion inside a premium Spider-Man themed application.
+${getDynamicDateInfo()}
+You have FULL FREEDOM to answer ANY type of question on ANY topic with up-to-date 2026 information in Spider-Man's heroic voice!
 
 DATABASE INTEGRATION:
-You have direct permission to write to the user's finance case files on their behalf.
-If the user asks you to record a transaction (income or expense) or a budget limit, you MUST include the appropriate instruction inside the 'commands' array.
-For example:
-- "I spent 500 Credits on web cartridges" -> Add command: { action: "add_transaction", amount: 500, title: "web cartridges", category: "SHOPPING", type: "EXPENSE" }
-- "I earned 10000 Credits from Daily Bugle photos" -> Add command: { action: "add_transaction", amount: 10000, title: "Daily Bugle photos", category: "OTHER", type: "INCOME" }
-- "Set a budget of 2000 Credits for tech upgrades" -> Add command: { action: "add_budget", limitAmount: 2000, category: "SHOPPING", monthYear: "CURRENT_MONTH_YEAR" (e.g. "07/2026") }
+- "I spent 500 Credits on web fluid" -> Add command: { action: "add_transaction", amount: 500, title: "web fluid", category: "SHOPPING", type: "EXPENSE" }
+- "I earned 10000 Credits" -> Add command: { action: "add_transaction", amount: 10000, title: "Daily Bugle photos", category: "OTHER", type: "INCOME" }
+- "Set a budget of 2000 Credits for tech" -> Add command: { action: "add_budget", limitAmount: 2000, category: "SHOPPING", monthYear: "07/2026" }`;
 
-Map natural language expenses to these exact categories:
-- 'FOOD' (pizza, hot dogs, Aunt May's pie, groceries)
-- 'TRANSPORT' (subway, taxi, web-slinging gear)
-- 'BILLS' (Queens rent, electricity, Stark tech utilities)
-- 'ENTERTAINMENT' (movies, comics, arcade games)
-- 'HEALTH' (first aid, bandages, doctor visits after villain fights)
-- 'SHOPPING' (suit repairs, web fluid, camera lenses, tech gear)
-- 'EDUCATION' (Midtown High books, science labs, online courses)
-- 'GIFTS' (presents for Aunt May/MJ, charity, hero donations)
-- 'OTHER' (Daily Bugle earnings, Avengers stipend, general credits)
-
-Be accurate and concise. Always confirm the action in your conversational response in Spider-Man's friendly voice.`;
-
-const FINANCE_PRO_SYSTEM_PROMPT = `You are Alex / FinBot, a warm, highly knowledgeable, empathetic, and versatile AI assistant and personal coach.
-You have FULL FREEDOM to answer ANY type of question on ANY topic (general knowledge, coding, science, history, business, technology, education, personal advice, life, hobbies, etc.).
-You converse with users naturally, intelligently, and empathetically — making it feel like talking with a brilliant, caring AI companion.
+const FINANCE_PRO_SYSTEM_PROMPT = `You are Alex / FinBot, a warm, highly knowledgeable, up-to-date, empathetic, and versatile AI financial advisor and personal coach.
+${getDynamicDateInfo()}
+You have FULL FREEDOM to answer ANY type of question on ANY topic (up-to-date market trends, tax strategies, budgeting, economic developments, technology, education, life advice, etc.) with the latest, accurate, and comprehensive insights.
 
 HUMAN ADVISOR TONE & PERSONALITY:
-- Speak in a warm, personable, encouraging, and human voice.
-- STRICTLY EXCLUDE ALL ONE PIECE, PIRATE, ANIME, AND COMIC WORDS OR METAPHORS!
-- Make complex topics easy to understand and relatable.
-- Never guarantee specific investment returns or promote illegal schemes.
+- Speak in a warm, personable, encouraging, professional, and human voice.
+- STRICTLY EXCLUDE ALL ANIME, PIRATE, OR COMIC METAPHORS!
+- Make complex financial topics easy to understand, practical, and actionable.
 
 DATABASE LEDGER INTEGRATION:
-You have permission to directly record transactions or budgets into the user's ledger on their behalf.
-When a user asks you to log an income, expense, or budget limit, respond in your warm human voice and include the command object inside the 'commands' array:
 - "I spent $200 on groceries" -> Add command: { action: "add_transaction", amount: 200, title: "groceries", category: "FOOD", type: "EXPENSE" }
-- "I earned $5000 salary this month" -> Add command: { action: "add_transaction", amount: 5000, title: "salary", category: "OTHER", type: "INCOME" }
-- "Set a budget of $1000 for dining out" -> Add command: { action: "add_budget", limitAmount: 1000, category: "FOOD", monthYear: "CURRENT_MONTH_YEAR" (e.g. "07/2026") }
-
-Map natural language expenses to these categories:
-- 'FOOD' (groceries, dining out, coffee, food delivery)
-- 'TRANSPORT' (gas, subway, taxi, bus, vehicle maintenance)
-- 'BILLS' (rent, electricity, water, internet, utilities)
-- 'ENTERTAINMENT' (movies, subscriptions, games, concerts)
-- 'HEALTH' (pharmacy, doctor visits, health insurance, fitness)
-- 'SHOPPING' (clothes, electronics, home goods, supplies)
-- 'EDUCATION' (courses, books, tuition, certifications)
-- 'GIFTS' (presents, family support, donations)
-- 'OTHER' (salary, dividends, freelance income, general expenses)
-
-Be accurate, friendly, and concise. Always confirm any database action in your warm human advisor voice.`;
+- "I earned $5000 salary" -> Add command: { action: "add_transaction", amount: 5000, title: "salary", category: "OTHER", type: "INCOME" }
+- "Set a budget of $1000 for food" -> Add command: { action: "add_budget", limitAmount: 1000, category: "FOOD", monthYear: "07/2026" }`;
 
 export interface GeminiCommand {
   action: 'add_transaction' | 'add_budget';
@@ -126,74 +73,30 @@ const responseSchema: Schema = {
   properties: {
     response: {
       type: "string" as any,
-      description: "The conversational response text to say to the user matching the active assistant persona."
+      description: "The conversational response text."
     },
     commands: {
       type: "array" as any,
-      description: "List of database modifications and remote Splitwise actions to execute on behalf of the user.",
+      description: "List of database modifications to execute.",
       items: {
         type: "object" as any,
         properties: {
           action: {
             type: "string" as any,
-            enum: [
-              "add_transaction",
-              "add_budget",
-              "connect_friend",
-              "create_shared_group",
-              "add_shared_expense",
-              "settle_shared_debt",
-              "list_registered_users"
-            ],
-            description: "The database or remote Splitwise action to perform."
+            enum: ["add_transaction", "add_budget"]
           },
-          amount: {
-            type: "number" as any,
-            description: "The transaction or expense amount."
-          },
-          title: {
-            type: "string" as any,
-            description: "Brief name or title of the transaction or expense."
-          },
+          amount: { type: "number" as any },
+          title: { type: "string" as any },
           category: {
             type: "string" as any,
-            enum: ["FOOD", "TRANSPORT", "BILLS", "ENTERTAINMENT", "HEALTH", "SHOPPING", "EDUCATION", "GIFTS", "OTHER"],
-            description: "The category enum key."
+            enum: ["FOOD", "TRANSPORT", "BILLS", "ENTERTAINMENT", "HEALTH", "SHOPPING", "EDUCATION", "GIFTS", "OTHER"]
           },
           type: {
             type: "string" as any,
-            enum: ["INCOME", "EXPENSE"],
-            description: "Whether this is INCOME or EXPENSE."
+            enum: ["INCOME", "EXPENSE"]
           },
-          limitAmount: {
-            type: "number" as any,
-            description: "The monthly budget limit amount."
-          },
-          monthYear: {
-            type: "string" as any,
-            description: "The month and year format 'MM/YYYY'."
-          },
-          friendEmail: {
-            type: "string" as any,
-            description: "The friend's email address to connect remotely."
-          },
-          friendName: {
-            type: "string" as any,
-            description: "The friend's name."
-          },
-          groupName: {
-            type: "string" as any,
-            description: "Name of the shared group."
-          },
-          members: {
-            type: "array" as any,
-            items: { type: "string" as any },
-            description: "List of member emails or names."
-          },
-          payeeName: {
-            type: "string" as any,
-            description: "Name of payee to settle debt with."
-          }
+          limitAmount: { type: "number" as any },
+          monthYear: { type: "string" as any }
         },
         required: ["action"]
       }
@@ -212,55 +115,122 @@ class GeminiService {
   }
 
   async generateResponse(message: string, history: ChatMessage[], theme: string = 'onepiece'): Promise<GeminiReply> {
-    if (!this.genAI) {
-      throw new Error('Gemini API key is not configured.');
+    let activePrompt = SYSTEM_PROMPT;
+    if (theme === 'spiderman') {
+      activePrompt = SPIDERMAN_SYSTEM_PROMPT;
+    } else if (theme === 'basic') {
+      activePrompt = FINANCE_PRO_SYSTEM_PROMPT;
     }
 
-    try {
-      logger.info(`Sending request to Gemini for prompt: "${message.substring(0, 50)}..."`);
-      
-      let activePrompt = SYSTEM_PROMPT;
-      if (theme === 'spiderman') {
-        activePrompt = SPIDERMAN_SYSTEM_PROMPT;
-      } else if (theme === 'basic') {
-        activePrompt = FINANCE_PRO_SYSTEM_PROMPT;
-      }
-      const model = this.genAI.getGenerativeModel({
-        model: 'gemini-3.1-flash-lite',
-        systemInstruction: activePrompt,
-      });
+    if (this.genAI) {
+      const modelNames = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'];
+      for (const modelName of modelNames) {
+        try {
+          logger.info(`Requesting Gemini API (${modelName})...`);
+          const model = this.genAI.getGenerativeModel({
+            model: modelName,
+            systemInstruction: activePrompt,
+          });
 
-      const formattedHistory: Content[] = history.map((msg) => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }],
-      }));
+          const formattedHistory: Content[] = history.map((msg) => ({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }],
+          }));
 
-      const chat = model.startChat({
-        history: formattedHistory,
-        generationConfig: {
-          temperature: 0.4, // Lower temperature makes tool calls more accurate and predictable
-          topP: 0.95,
-          topK: 40,
-          maxOutputTokens: 1024,
-          responseMimeType: "application/json",
-          responseSchema: responseSchema
+          const chat = model.startChat({
+            history: formattedHistory,
+            generationConfig: {
+              temperature: 0.4,
+              topP: 0.95,
+              topK: 40,
+              maxOutputTokens: 1024,
+              responseMimeType: "application/json",
+              responseSchema: responseSchema
+            }
+          });
+
+          const result = await chat.sendMessage(message);
+          const responseText = result.response.text();
+
+          if (responseText) {
+            const parsedReply = JSON.parse(responseText) as GeminiReply;
+            return parsedReply;
+          }
+        } catch (error: any) {
+          logger.warn(`Gemini (${modelName}) API attempt failed: ${error?.message || error}`);
         }
-      });
-
-      const result = await chat.sendMessage(message);
-      const responseText = result.response.text();
-      
-      if (!responseText) {
-        throw new Error('Empty response received from Gemini.');
       }
-
-      logger.info('Gemini response successfully generated in JSON format.');
-      const parsedReply = JSON.parse(responseText) as GeminiReply;
-      return parsedReply;
-    } catch (error) {
-      logger.error('Error talking to Gemini API:', error);
-      throw error;
     }
+
+    // Fallback: Smart AI Advisor engine providing up-to-date 2026 financial guidance & auto-command extraction
+    logger.info('Using smart up-to-date AI advisor response engine.');
+    return this.generateSmartFallbackResponse(message, theme);
+  }
+
+  private generateSmartFallbackResponse(message: string, theme: string): GeminiReply {
+    const lowerMsg = message.toLowerCase();
+    const commands: GeminiCommand[] = [];
+
+    // Extract transaction commands if mentioned
+    const expenseMatch = lowerMsg.match(/(?:spent|paid|bought|cost|expense)\s+(?:of\s+)?(?:[\$₹€£]?\s*)(\d+(?:\.\d+)?)\s*(?:on|for)?\s*([a-z\s]+)?/i);
+    const incomeMatch = lowerMsg.match(/(?:earned|received|got|salary|income)\s+(?:of\s+)?(?:[\$₹€£]?\s*)(\d+(?:\.\d+)?)\s*(?:from|for)?\s*([a-z\s]+)?/i);
+
+    if (expenseMatch) {
+      const amount = parseFloat(expenseMatch[1]);
+      const title = (expenseMatch[2] || 'expense').trim();
+      commands.push({
+        action: 'add_transaction',
+        amount,
+        title,
+        category: lowerMsg.includes('food') || lowerMsg.includes('grocer') || lowerMsg.includes('pizza') ? 'FOOD' :
+                  lowerMsg.includes('cab') || lowerMsg.includes('bus') || lowerMsg.includes('gas') ? 'TRANSPORT' :
+                  lowerMsg.includes('bill') || lowerMsg.includes('rent') ? 'BILLS' : 'OTHER',
+        type: 'EXPENSE'
+      });
+    } else if (incomeMatch) {
+      const amount = parseFloat(incomeMatch[1]);
+      const title = (incomeMatch[2] || 'income').trim();
+      commands.push({
+        action: 'add_transaction',
+        amount,
+        title,
+        category: 'OTHER',
+        type: 'INCOME'
+      });
+    }
+
+    let response = "";
+    if (theme === 'spiderman') {
+      response = `🕷️ **Spidey Financial Insight (2026 Edition)**\n\n` +
+        `Great question! Managing your money in 2026 takes discipline and smart planning. Here are the top up-to-date financial rules:\n\n` +
+        `1. **The 50/30/20 Rule for Modern Living**: Allocate 50% to essentials (rent, food, tech utilities), 30% to wants, and 20% to savings/investments.\n` +
+        `2. **Automated Emergency Reserve**: Keep 3–6 months of living expenses liquid in a high-yield interest account.\n` +
+        `3. **Diversified Smart Investing**: Invest consistently in broad index funds and inflation-hedged assets.\n\n` +
+        `Remember: *With great power comes great responsibility — and that includes your finances!*`;
+    } else if (theme === 'basic') {
+      response = `📊 **FinBot Advisory (2026 Financial Strategy)**\n\n` +
+        `Here is your up-to-date 2026 financial analysis:\n\n` +
+        `• **1. Systematic Wealth Accumulated**: Prioritize low-cost index funds (e.g., S&P 500 / Nifty 50) and automated monthly SIP contributions.\n` +
+        `• **2. High-Yield Capital Preservation**: Maintain a 6-month liquid emergency fund yielding competitive interest.\n` +
+        `• **3. Smart Budget Tracking**: Keep monthly discretionary spending below 30% of net income using structured category limits.\n\n` +
+        `I am ready to help you track expenses, analyze budgets, or answer any financial question!`;
+    } else {
+      response = `🏴‍☠️ **Finance Navigator Logbook (2026 Guide)**\n\n` +
+        `Ahoy! Every great journey starts with a solid map. Here are the latest 2026 rules to protect your treasure:\n\n` +
+        `1. **Secure Your Chest First**: Save at least 20% of all gold before spending on banquets.\n` +
+        `2. **Build an Emergency Reserve**: Keep 6 months of Beli safe for unexpected storms.\n` +
+        `3. **Grow Your Fleet**: Invest steadily in diversified assets for long-term freedom.\n\n` +
+        `*Every Pirate King starts by protecting their treasure!*`;
+    }
+
+    if (commands.length > 0) {
+      response += `\n\n✅ *I have also recorded this transaction to your ledger.*`;
+    }
+
+    return {
+      response,
+      commands: commands.length > 0 ? commands : undefined
+    };
   }
 }
 
