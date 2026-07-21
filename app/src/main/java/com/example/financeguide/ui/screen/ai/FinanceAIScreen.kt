@@ -316,17 +316,7 @@ fun FinanceAIScreen(
                 }
             }
 
-            // Suggestions List
-            if (uiState.messages.isEmpty() || uiState.messages.size < 4) {
-                HorizontalSuggestedQuestions(
-                    suggestions = uiState.suggestedQuestions,
-                    onSelect = { question ->
-                        inputText = question
-                        viewModel.sendMessage(question)
-                        keyboardController?.hide()
-                    }
-                )
-            }
+
 
             // Modern AI Assistant Prompt Card
             Surface(
