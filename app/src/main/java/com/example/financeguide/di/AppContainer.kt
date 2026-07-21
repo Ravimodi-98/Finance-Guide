@@ -69,8 +69,8 @@ class AppContainer(private val context: Context) {
 
     private val aiRetrofit: Retrofit by lazy {
         Retrofit.Builder()
-            // Default address. Set to http://10.0.2.2:3000/ for local emulator or deployed endpoint
-            .baseUrl("http://10.0.2.2:3000/")
+            // Set to http://127.0.0.1:3000/ for physical phone USB debugging (via adb reverse tcp:3000 tcp:3000)
+            .baseUrl("http://127.0.0.1:3000/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
