@@ -426,9 +426,62 @@ fun LoginScreen(
 
 @Composable
 fun ProfessionalLogo(modifier: Modifier = Modifier) {
-    androidx.compose.foundation.Image(
-        painter = androidx.compose.ui.res.painterResource(id = com.example.financeguide.R.drawable.app_logo),
-        contentDescription = "Finance Guide Logo",
-        modifier = modifier
-    )
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+
+        // Outer glowing shield/badge background
+        val shieldPath = Path().apply {
+            moveTo(w * 0.5f, 0f)
+            lineTo(w * 0.95f, h * 0.25f)
+            lineTo(w * 0.95f, h * 0.65f)
+            cubicTo(w * 0.95f, h * 0.9f, w * 0.5f, h, w * 0.5f, h)
+            cubicTo(w * 0.5f, h, w * 0.05f, h * 0.9f, w * 0.05f, h * 0.65f)
+            lineTo(w * 0.05f, h * 0.25f)
+            close()
+        }
+
+        drawPath(
+            path = shieldPath,
+            brush = Brush.linearGradient(
+                colors = listOf(Color(0xFF6366F1), Color(0xFF10B981)),
+                start = Offset(0f, 0f),
+                end = Offset(w, h)
+            )
+        )
+
+        // Inner shield inset
+        val innerShieldPath = Path().apply {
+            moveTo(w * 0.5f, h * 0.08f)
+            lineTo(w * 0.88f, h * 0.28f)
+            lineTo(w * 0.88f, h * 0.63f)
+            cubicTo(w * 0.88f, h * 0.84f, w * 0.5f, h * 0.93f, w * 0.5f, h * 0.93f)
+            cubicTo(w * 0.5f, h * 0.93f, w * 0.12f, h * 0.84f, w * 0.12f, h * 0.63f)
+            lineTo(w * 0.12f, h * 0.28f)
+            close()
+        }
+
+        drawPath(
+            path = innerShieldPath,
+            color = Color(0xFF0F172A)
+        )
+
+        // Growth bar chart lines
+        val barWidth = w * 0.1f
+        drawRect(
+            color = Color(0xFF10B981),
+            topLeft = Offset(w * 0.28f, h * 0.55f),
+            size = Size(barWidth, h * 0.22f)
+        )
+        drawRect(
+            color = Color(0xFF38BDF8),
+            topLeft = Offset(w * 0.45f, h * 0.42f),
+            size = Size(barWidth, h * 0.35f)
+        )
+        drawRect(
+            color = Color(0xFF6366F1),
+            topLeft = Offset(w * 0.62f, h * 0.30f),
+            size = Size(barWidth, h * 0.47f)
+        )
+    }
 }
