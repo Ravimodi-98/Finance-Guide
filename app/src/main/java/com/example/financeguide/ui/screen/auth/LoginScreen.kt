@@ -29,14 +29,17 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.financeguide.data.remote.*
+import com.example.financeguide.data.repository.AuthRepository
+import com.example.financeguide.data.repository.AuthResult
 import com.example.financeguide.theme.*
 import com.example.financeguide.ui.components.ThemeAppLogo
 import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (name: String, email: String, avatar: String, token: String) -> Unit
+    authRepository: AuthRepository,
+    onLoginSuccess: (name: String, email: String, avatar: String, token: String) -> Unit,
+    onNavigateToVerify: (email: String) -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -120,7 +123,6 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Theme-aware Logo
             ThemeAppLogo(
                 themeMode = activeThemeMode,
                 modifier = Modifier
@@ -144,7 +146,7 @@ fun LoginScreen(
 
             Text(
                 text = if (isSignUpMode) 
-                    "Create your account and select your avatar to start." 
+                    "Create your account to receive a 6-digit email verification code." 
                     else strings.signInSubtitle,
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.6f),
@@ -154,7 +156,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Name Field (Only shown in Sign Up mode)
             if (isSignUpMode) {
                 OutlinedTextField(
                     value = name,
@@ -162,7 +163,7 @@ fun LoginScreen(
                         name = it
                         nameError = null
                     },
-                    label = { Text("Pirate Name") },
+                    label = { Text("Name") },
                     leadingIcon = { Icon(Icons.Rounded.Person, contentDescription = null, tint = Secondary) },
                     isError = nameError != null,
                     modifier = Modifier.fillMaxWidth(),
@@ -185,14 +186,13 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Email Field
             OutlinedTextField(
                 value = email,
                 onValueChange = {
                     email = it
                     emailError = null
                 },
-                label = { Text("Crew Email") },
+                label = { Text("Email Address") },
                 leadingIcon = { Icon(Icons.Rounded.Email, contentDescription = null, tint = Secondary) },
                 isError = emailError != null,
                 modifier = Modifier.fillMaxWidth(),
@@ -216,14 +216,13 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Password Field
             OutlinedTextField(
                 value = password,
                 onValueChange = {
                     password = it
                     passwordError = null
                 },
-                label = { Text("Crew Password") },
+                label = { Text("Password") },
                 leadingIcon = { Icon(Icons.Rounded.Lock, contentDescription = null, tint = Secondary) },
                 trailingIcon = {
                     IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
@@ -255,11 +254,10 @@ fun LoginScreen(
                 )
             }
 
-            // Crew Avatar Selection (Only shown in Sign Up mode)
             if (isSignUpMode) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "Choose Crew Identity",
+                    text = "Choose Identity",
                     style = MaterialTheme.typography.titleMedium,
                     color = Secondary,
                     fontWeight = FontWeight.Bold,
@@ -310,16 +308,15 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Action Button
             Button(
                 onClick = {
                     var hasError = false
                     if (isSignUpMode && name.isBlank()) {
-                        nameError = "Pirate name is required"
+                        nameError = "Name is required"
                         hasError = true
                     }
                     if (email.isBlank() || !email.contains("@")) {
-                        emailError = "Valid crew email is required"
+                        emailError = "Valid email address is required"
                         hasError = true
                     }
                     if (password.length < 6) {
@@ -332,138 +329,40 @@ fun LoginScreen(
                         coroutineScope.launch {
                             try {
                                 if (isSignUpMode) {
-                                    // 1. SIGN UP API
-                                    val response = SupabaseClient.api.signUp(
-                                        apiKey = SupabaseClient.API_KEY,
-                                        token = "Bearer ${SupabaseClient.API_KEY}",
-                                        request = SupabaseSignUpRequest(
-                                            email = email,
-                                            password = password,
-                                            data = SupabaseUserMetadata(name, selectedAvatar)
-                                        )
-                                    )
-                                    
-                                if (response.isSuccessful && response.body() != null) {
-                                        val body = response.body()!!
-                                        val token = body.accessToken
-                                        if (token != null && token.isNotEmpty()) {
-                                            Toast.makeText(context, "Welcome aboard, $name!", Toast.LENGTH_SHORT).show()
-                                            onLoginSuccess(
-                                                body.user.userMetadata?.name ?: name,
-                                                email,
-                                                body.user.userMetadata?.avatar ?: selectedAvatar,
-                                                token
-                                            )
-                                        } else {
-                                            // Email confirmation is enabled on Supabase, log in offline so the user isn't blocked
-                                            Toast.makeText(
-                                                context,
-                                                "Registration successful! Logging in...",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                            onLoginSuccess(
-                                                if (name.isBlank()) "Pirate" else name,
-                                                email,
-                                                selectedAvatar,
-                                                ""
-                                            )
+                                    val result = authRepository.register(email, password, name)
+                                    when (result) {
+                                        is AuthResult.RequiresVerification -> {
+                                            Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                                            onNavigateToVerify(result.email)
                                         }
-                                    } else {
-                                        val errBody = response.errorBody()?.string() ?: ""
-                                        val isRateLimit = isRateLimitError(errBody, response.code())
-                                        val cleanMessage = when {
-                                            errBody.contains("User already exists") -> "A pirate is already registered with this email!"
-                                            isRateLimit -> "Too many requests — please wait a moment and try again."
-                                            else -> parseSupabaseErrorMessage(errBody, "Registration failed")
+                                        is AuthResult.Error -> {
+                                            Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
                                         }
-                                        Toast.makeText(context, cleanMessage, Toast.LENGTH_LONG).show()
-                                        if (isRateLimit) {
-                                            onLoginSuccess(
-                                                if (name.isBlank()) "Pirate" else name,
-                                                email,
-                                                selectedAvatar,
-                                                ""
-                                            )
-                                        }
+                                        else -> {}
                                     }
                                 } else {
-                                    // 2. SIGN IN API
-                                    val response = SupabaseClient.api.signIn(
-                                        apiKey = SupabaseClient.API_KEY,
-                                        token = "Bearer ${SupabaseClient.API_KEY}",
-                                        request = SupabaseSignInRequest(
-                                            email = email,
-                                            password = password
-                                        )
-                                    )
-
-                                    if (response.isSuccessful && response.body() != null) {
-                                        val body = response.body()!!
-                                        val token = body.accessToken
-                                        if (token != null && token.isNotEmpty()) {
-                                            val metadataName = body.user.userMetadata?.name ?: "Pirate Crew"
-                                            val metadataAvatar = body.user.userMetadata?.avatar ?: "Luffy"
-                                            
-                                            Toast.makeText(context, "Welcome back, $metadataName!", Toast.LENGTH_SHORT).show()
-                                            onLoginSuccess(metadataName, email, metadataAvatar, token)
-                                        } else {
-                                            Toast.makeText(context, "Access token missing", Toast.LENGTH_LONG).show()
+                                    val result = authRepository.login(email, password)
+                                    when (result) {
+                                        is AuthResult.Success -> {
+                                            Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
+                                            onLoginSuccess(
+                                                email.substringBefore("@").replaceFirstChar { it.uppercase() },
+                                                email,
+                                                selectedAvatar,
+                                                "token_active"
+                                            )
                                         }
-                                    } else {
-                                        val errBody = response.errorBody()?.string() ?: ""
-                                        val isRateLimit = isRateLimitError(errBody, response.code())
-                                        val isEmailNotConfirmed = errBody.contains("email_not_confirmed")
-                                        when {
-                                            isRateLimit -> {
-                                                // Supabase rate-limited — allow offline login silently
-                                                Toast.makeText(
-                                                    context,
-                                                    "Supabase is busy right now. Logging in offline...",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-                                                onLoginSuccess(
-                                                    email.substringBefore("@").replaceFirstChar { it.uppercase() },
-                                                    email,
-                                                    selectedAvatar,
-                                                    ""
-                                                )
-                                            }
-                                            isEmailNotConfirmed -> {
-                                                Toast.makeText(context, "Confirm email is pending. Logging in...", Toast.LENGTH_LONG).show()
-                                                onLoginSuccess(
-                                                    email.substringBefore("@").replaceFirstChar { it.uppercase() },
-                                                    email,
-                                                    selectedAvatar,
-                                                    ""
-                                                )
-                                            }
-                                            errBody.contains("invalid_credentials") -> {
-                                                Toast.makeText(context, "Invalid email or password.", Toast.LENGTH_LONG).show()
-                                            }
-                                            else -> {
-                                                Toast.makeText(
-                                                    context,
-                                                    parseSupabaseErrorMessage(errBody, "Sign in failed"),
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-                                            }
+                                        is AuthResult.RequiresVerification -> {
+                                            Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                                            onNavigateToVerify(result.email)
+                                        }
+                                        is AuthResult.Error -> {
+                                            Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
                                         }
                                     }
                                 }
                             } catch (e: Exception) {
-                                val isRateLimit = isRateLimitError(e.localizedMessage ?: "", -1) ||
-                                        e.localizedMessage?.contains("429") == true
-                                if (isRateLimit) {
-                                    Toast.makeText(context, "Supabase is busy right now. Logging in offline...", Toast.LENGTH_LONG).show()
-                                    onLoginSuccess(
-                                        if (name.isBlank()) email.substringBefore("@").replaceFirstChar { it.uppercase() } else name,
-                                        email,
-                                        selectedAvatar,
-                                        ""
-                                    )
-                                } else {
-                                    Toast.makeText(context, "Connection error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                                }
+                                Toast.makeText(context, "Authentication error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                             } finally {
                                 isLoading = false
                             }
@@ -491,7 +390,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Fallback Offline Mode Button
             OutlinedButton(
                 onClick = {
                     val defaultGuestName = when {
@@ -507,7 +405,7 @@ fun LoginScreen(
                     val guestName = if (name.isBlank()) defaultGuestName else name
                     val guestEmail = if (email.isBlank()) defaultGuestEmail else email
                     Toast.makeText(context, "Continuing in Offline Mode", Toast.LENGTH_SHORT).show()
-                    onLoginSuccess(guestName, guestEmail, selectedAvatar, "") // Empty token bypasses Supabase sync
+                    onLoginSuccess(guestName, guestEmail, selectedAvatar, "")
                 },
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
@@ -526,9 +424,8 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Toggle mode link
             Text(
-                text = if (isSignUpMode) "Already registered? Sign In" else "New to the crew? Join and Register!",
+                text = if (isSignUpMode) "Already registered? Sign In" else "New to the app? Create account & verify email!",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = Secondary,
@@ -549,39 +446,3 @@ fun LoginScreen(
 }
 
 data class AvatarOption(val name: String, val emoji: String, val themeColor: Color)
-
-fun parseSupabaseErrorMessage(rawJson: String, default: String): String {
-    return try {
-        val search = "\"msg\":\""
-        val index = rawJson.indexOf(search)
-        if (index != -1) {
-            val start = index + search.length
-            val end = rawJson.indexOf("\"", start)
-            if (end != -1) {
-                return rawJson.substring(start, end)
-            }
-        }
-        if (rawJson.isNotEmpty()) rawJson else default
-    } catch (e: Exception) {
-        default
-    }
-}
-
-/**
- * Detects all Supabase rate limit error formats:
- * - "over_request_rate_limit"  (new Supabase format)
- * - "too_many_requests"        (generic REST format)
- * - "rate_limit" / "rate limit" (older formats)
- * - HTTP status code 429
- */
-fun isRateLimitError(body: String, httpCode: Int): Boolean {
-    if (httpCode == 429) return true
-    val lower = body.lowercase()
-    return lower.contains("over_request_rate_limit") ||
-            lower.contains("too_many_requests") ||
-            lower.contains("rate_limit") ||
-            lower.contains("rate limit") ||
-            lower.contains("request rate limit") ||
-            lower.contains("email rate limit exceeded")
-}
-

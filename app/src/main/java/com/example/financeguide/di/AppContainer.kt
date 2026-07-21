@@ -13,6 +13,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.example.financeguide.data.remote.FinanceApiService
+import com.example.financeguide.data.repository.AuthRepository
 import com.example.financeguide.data.repository.FinanceAIRepositoryImpl
 import com.example.financeguide.domain.repository.FinanceAIRepository
 import com.example.financeguide.domain.usecase.AskFinanceQuestionUseCase
@@ -68,9 +69,8 @@ class AppContainer(private val context: Context) {
 
     private val aiRetrofit: Retrofit by lazy {
         Retrofit.Builder()
-            // Default address. Set to http://127.0.0.1:3000/ for physical phone USB debugging (via adb reverse)
-            // Or set to http://10.0.2.2:3000/ for Android emulator local loopback
-            .baseUrl("https://backend-blond-eight-79.vercel.app/")
+            // Default address. Set to http://10.0.2.2:3000/ for local emulator or deployed endpoint
+            .baseUrl("http://10.0.2.2:3000/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -86,6 +86,10 @@ class AppContainer(private val context: Context) {
 
     val askFinanceQuestionUseCase: AskFinanceQuestionUseCase by lazy {
         AskFinanceQuestionUseCase(financeAIRepository)
+    }
+
+    val authRepository: AuthRepository by lazy {
+        AuthRepository(financeApiService, settingsManager)
     }
 
     // --- Factories ---

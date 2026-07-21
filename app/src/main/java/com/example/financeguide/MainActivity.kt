@@ -9,13 +9,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
@@ -28,9 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.financeguide.theme.FinanceGuideTheme
-import com.example.financeguide.theme.GradientStart
-import com.example.financeguide.theme.GradientMiddle
-import com.example.financeguide.theme.GradientEnd
 import com.example.financeguide.theme.LocalThemeStrings
 import com.example.financeguide.theme.OnePieceStrings
 import com.example.financeguide.theme.SpidermanStrings
@@ -40,6 +35,7 @@ import com.example.financeguide.ui.FinanceViewModel
 import com.example.financeguide.ui.components.LocalCurrency
 import com.example.financeguide.ui.screen.onboarding.OnboardingScreen
 import com.example.financeguide.ui.screen.auth.LoginScreen
+import com.example.financeguide.ui.screen.auth.VerifyEmailScreen
 
 import com.example.financeguide.ui.components.ThemeAppLogo
 import com.example.financeguide.theme.SpideyPrimaryLight
@@ -70,6 +66,7 @@ class MainActivity : ComponentActivity() {
             }
 
             var showSplash by remember { mutableStateOf(true) }
+            var pendingVerifyEmail by remember { mutableStateOf<String?>(null) }
 
             // Pulse & Rotate animations for the logo
             val infiniteTransition = rememberInfiniteTransition(label = "SplashTransition")
@@ -113,7 +110,6 @@ class MainActivity : ComponentActivity() {
             )
 
             LaunchedEffect(Unit) {
-                // Keep splash for 2200ms then hide
                 kotlinx.coroutines.delay(2200)
                 showSplash = false
             }
@@ -125,7 +121,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         if (showSplash) {
-                            // Splash screen with premium animated background
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -140,7 +135,6 @@ class MainActivity : ComponentActivity() {
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                // Floating background decorations
                                 Box(modifier = Modifier.fillMaxSize()) {
                                     GoldCoin(
                                         modifier = Modifier
@@ -169,7 +163,6 @@ class MainActivity : ComponentActivity() {
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    // Theme-aware Pulsing Logo
                                     ThemeAppLogo(
                                         themeMode = themeMode,
                                         modifier = Modifier
@@ -184,7 +177,7 @@ class MainActivity : ComponentActivity() {
                                         fontWeight = FontWeight.Bold,
                                         color = when (themeMode) {
                                             "spiderman" -> SpideyPrimaryLight
-                                            "basic" -> Color(0xFF00E599) // Mint Emerald
+                                            "basic" -> Color(0xFF00E599)
                                             else -> Color(0xFFFFB703)
                                         },
                                         letterSpacing = 4.sp
@@ -202,10 +195,25 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
+                        } else if (pendingVerifyEmail != null) {
+                            VerifyEmailScreen(
+                                email = pendingVerifyEmail!!,
+                                authRepository = appContainer.authRepository,
+                                onVerificationSuccess = {
+                                    pendingVerifyEmail = null
+                                },
+                                onBack = {
+                                    pendingVerifyEmail = null
+                                }
+                            )
                         } else if (!isLoggedIn) {
                             LoginScreen(
+                                authRepository = appContainer.authRepository,
                                 onLoginSuccess = { selectedName, selectedEmail, selectedAvatar, selectedToken ->
                                     settingsManager.saveUserLogin(selectedName, selectedEmail, selectedAvatar, selectedToken)
+                                },
+                                onNavigateToVerify = { emailToVerify ->
+                                    pendingVerifyEmail = emailToVerify
                                 }
                             )
                         } else if (!onboardingCompleted) {
@@ -233,17 +241,14 @@ class MainActivity : ComponentActivity() {
 fun GoldCoin(modifier: Modifier = Modifier) {
     Canvas(modifier = modifier.size(36.dp)) {
         val radius = size.minDimension / 2
-        // Outer shiny rim
         drawCircle(
             color = Color(0xFFFFB703),
             radius = radius
         )
-        // Inner circle
         drawCircle(
             color = Color(0xFFFFD166),
             radius = radius * 0.75f
         )
-        // Beli sign "B" or "฿"
         drawCircle(
             color = Color(0xFFC78B00),
             radius = radius * 0.4f
@@ -257,21 +262,18 @@ fun StrawHatIcon(modifier: Modifier = Modifier) {
         val w = size.width
         val h = size.height
         
-        // Draw Brim Shadow (semi-transparent dark red/black under brim)
         drawOval(
             color = Color.Black.copy(alpha = 0.3f),
             topLeft = Offset(w * 0.05f, h * 0.52f),
             size = Size(w * 0.9f, h * 0.35f)
         )
 
-        // Draw Brim (Straw Hat Yellow/Gold Oval)
         drawOval(
             color = Color(0xFFFFB703),
             topLeft = Offset(0f, h * 0.48f),
             size = Size(w, h * 0.38f)
         )
         
-        // Draw Crown (Straw Hat Yellow/Gold Dome)
         val path = Path().apply {
             moveTo(w * 0.22f, h * 0.55f)
             cubicTo(
@@ -283,7 +285,6 @@ fun StrawHatIcon(modifier: Modifier = Modifier) {
         }
         drawPath(path, color = Color(0xFFFFB703))
         
-        // Draw Red Ribbon at the base of the crown
         val ribbonPath = Path().apply {
             moveTo(w * 0.225f, h * 0.48f)
             lineTo(w * 0.775f, h * 0.48f)
@@ -292,7 +293,6 @@ fun StrawHatIcon(modifier: Modifier = Modifier) {
         }
         drawPath(ribbonPath, color = Color(0xFFD00000))
         
-        // Ribbon extension below the hat
         val ribbonLeft = Path().apply {
             moveTo(w * 0.25f, h * 0.55f)
             lineTo(w * 0.75f, h * 0.55f)
