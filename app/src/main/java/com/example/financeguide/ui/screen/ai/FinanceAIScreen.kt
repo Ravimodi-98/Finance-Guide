@@ -92,13 +92,11 @@ fun FinanceAIScreen(
         else     -> listOf(Color(0xFFFFC72C), Color(0xFF1E88E5)) // Straw Hat Gold to Marine Blue
     }
 
-    // Auto-scroll to the bottom when new messages arrive
+    // Auto-scroll to the bottom when new messages arrive or keyboard opens
     LaunchedEffect(uiState.messages.size, uiState.isLoading, isKeyboardOpen) {
         if (uiState.messages.isNotEmpty()) {
-            if (isKeyboardOpen) {
-                kotlinx.coroutines.delay(150)
-            }
-            listState.animateScrollToItem(uiState.messages.size)
+            kotlinx.coroutines.delay(100)
+            listState.animateScrollToItem(uiState.messages.size - 1)
         }
     }
 
@@ -278,7 +276,7 @@ fun FinanceAIScreen(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Bottom)
                     ) {
                         items(uiState.messages) { message ->
                             ChatBubble(

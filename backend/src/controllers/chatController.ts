@@ -17,8 +17,8 @@ export const handleChat = async (req: Request, res: Response, next: NextFunction
         const errorMsg = theme === 'spiderman'
           ? 'Spider-Sense alert: unable to connect to financial servers right now. Please try again later!'
           : theme === 'basic'
-          ? 'FinBot is temporarily unable to connect to analysis servers. Please try again shortly.'
-          : 'The Finance Navigator is having trouble reading the stars right now. Please try again later!';
+            ? 'FinBot is temporarily unable to connect to analysis servers. Please try again shortly.'
+            : 'The Finance Navigator is having trouble reading the stars right now. Please try again later!';
         res.status(500).json({ error: errorMsg });
         return;
       }
@@ -36,8 +36,8 @@ export const handleReset = (req: Request, res: Response): void => {
   const resetMsg = theme === 'spiderman'
     ? 'Case file history cleared. Spider-Man is ready for new missions.'
     : theme === 'basic'
-    ? 'Chat history reset. FinBot is ready for your financial queries.'
-    : 'Logbook cleared. The Navigation chat is reset.';
+      ? 'Chat history reset. FinBot is ready for your financial queries.'
+      : 'Logbook cleared. The Navigation chat is reset.';
   res.status(200).json({ status: 'success', message: resetMsg });
 };
 
