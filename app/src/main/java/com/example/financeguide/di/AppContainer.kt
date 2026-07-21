@@ -20,6 +20,7 @@ import com.example.financeguide.domain.repository.FinanceAIRepository
 import com.example.financeguide.domain.usecase.AskFinanceQuestionUseCase
 import com.example.financeguide.ui.screen.ai.FinanceAIViewModelFactory
 import com.example.financeguide.ui.screen.markets.MarketsViewModelFactory
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 
@@ -59,10 +60,29 @@ class AppContainer(private val context: Context) {
 
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                try {
+                    chain.proceed(request)
+                } catch (e: IOException) {
+                    val host = request.url.host
+                    if (host == "127.0.0.1" || host == "localhost") {
+                        val fallbackUrl = request.url.newBuilder()
+                            .host("192.168.1.5")
+                            .build()
+                        val fallbackRequest = request.newBuilder()
+                            .url(fallbackUrl)
+                            .build()
+                        chain.proceed(fallbackRequest)
+                    } else {
+                        throw e
+                    }
+                }
+            }
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
-            .connectTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
