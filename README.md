@@ -4,22 +4,22 @@
 [![Android Studio](https://img.shields.io/badge/Android%20Studio-Jetpack%20Compose-3DDC84.svg?logo=androidstudio)](https://developer.android.com/jetpack/compose)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Finance Guide** is a simple, modern, and beautiful personal finance Android app built using **Kotlin**, **Jetpack Compose**, and **Clean Architecture**. 
+**Finance Guide** is a modern, 100% offline-first personal finance Android application built using **Kotlin**, **Jetpack Compose**, and **Room Database**.
 
-It helps you easily track your income, monitor daily expenses, set category budgets, analyze spending insights, and customize your app experience with custom themes.
+It helps you easily track your income, monitor daily expenses, set category budgets, analyze spending insights, and customize your app experience with vibrant themes.
 
 ---
 
 ## ✨ Key Features
 
-- 💰 **Income & Expense Tracking**: Quick and easy recording of daily transactions with category tags and notes.
-- 🎯 **Smart Budget Management**: Set monthly budgets for categories (Food, Rent, Bills, Shopping) and track spending with visual progress bars.
+- 💰 **Income & Expense Tracking**: Fast recording of daily transactions with category tags, custom notes, and date management.
+- 🎯 **Smart Budget Management**: Set monthly budgets for categories (Food, Rent, Bills, Shopping, Transport) and track spending with visual progress bars.
 - 📊 **Visual Insights & Analytics**: View clean spending breakdown donut charts and monthly balance summaries.
 - 🎨 **Multi-Theme Customization**: Switch anytime between 3 visual themes:
   - 🕷️ **Spider-Man Theme**: Heroic red and dark slate styling.
   - ☠️ **One Piece Theme**: Pirate ocean blue and straw hat gold styling.
   - 💰 **Finance Guide (Default)**: Modern mint emerald and cyber teal theme.
-- 🔐 **Secure User Authentication**: Complete user signup, login, and 6-digit OTP email verification powered by direct HTTPS Resend API.
+- 📱 **100% Standalone & Offline**: All user profiles, settings, transactions, and budgets are saved locally on your device with instant responsiveness and zero network dependencies.
 
 ---
 
@@ -29,7 +29,7 @@ It helps you easily track your income, monitor daily expenses, set category budg
 - **UI Framework**: Jetpack Compose (Material 3)
 - **Architecture**: MVVM + Clean Architecture
 - **Local Database**: Room Database
-- **Networking**: Retrofit 2, OkHttp 4
+- **Local Persistence**: SharedPreferences & SettingsManager
 - **State Management**: Kotlin Coroutines & StateFlow
 
 ---
