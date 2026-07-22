@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { UserStore } from '../services/userService';
 import { sendVerificationEmail } from '../services/emailService';
-import { supabase } from '../services/supabaseService';
+import { firebaseAuth } from '../services/firebaseService';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 
 // Helper to generate secure random 6-digit code
@@ -24,37 +24,33 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
+    let firebaseUser: any = null;
 
-    // 1. Create/Register user directly in Supabase Auth (Appears in Supabase Dashboard!)
-    const { data: supabaseData, error: supabaseError } = await supabase.auth.signUp({
-      email: cleanEmail,
-      password: password,
-      options: {
-        data: {
-          name: name.trim(),
-          avatar: 'Luffy'
-        }
-      }
-    });
-
-    if (supabaseError) {
-      // Handle existing user in Supabase
-      if (supabaseError.message.includes('already registered') || supabaseError.message.includes('User already exists')) {
+    // 1. Sync User to Firebase Project (finance-guide-5f5b1)
+    try {
+      firebaseUser = await firebaseAuth.createUser({
+        email: cleanEmail,
+        password: password,
+        displayName: name.trim(),
+        emailVerified: false
+      });
+    } catch (fbError: any) {
+      if (fbError.code === 'auth/email-already-exists') {
         const existingLocal = UserStore.findByEmail(cleanEmail);
         if (existingLocal && !existingLocal.isVerified) {
           return res.status(400).json({
             success: false,
             error: 'EMAIL_NOT_VERIFIED',
-            message: 'An account with this email exists but is not verified. Please verify your email.'
+            message: 'An account with this email exists in Firebase but is not verified. Please verify your email.'
           });
         }
         return res.status(400).json({
           success: false,
           error: 'EMAIL_IN_USE',
-          message: 'An account with this email is already registered in Supabase.'
+          message: 'An account with this email is already registered in Firebase.'
         });
       }
-      console.warn('Supabase SignUp warning:', supabaseError.message);
+      console.warn('Firebase registration warning:', fbError.message);
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -62,7 +58,7 @@ export const register = async (req: Request, res: Response) => {
     const verificationCodeHash = await bcrypt.hash(code, 10);
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    const userId = supabaseData?.user?.id || `usr_${Date.now()}_${crypto.randomInt(1000, 9999)}`;
+    const userId = firebaseUser?.uid || `usr_${Date.now()}_${crypto.randomInt(1000, 9999)}`;
 
     UserStore.save({
       id: userId,
@@ -160,13 +156,13 @@ export const verifyEmail = async (req: Request, res: Response) => {
     user.verificationAttempts = 0;
     UserStore.save(user);
 
-    // Update metadata in Supabase
+    // Update verified status in Firebase Auth
     try {
-      await supabase.auth.updateUser({
-        data: { is_verified: true }
+      await firebaseAuth.updateUser(user.id, {
+        emailVerified: true
       });
     } catch (e) {
-      // Ignore background metadata update error
+      // Ignore background metadata update error if user only exists locally
     }
 
     const accessToken = generateAccessToken({ userId: user.id, email: user.email });
@@ -207,42 +203,43 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-
-    // 1. Authenticate against Supabase Auth (Verifies user in Supabase Dashboard!)
-    const { data: supabaseAuthData, error: supabaseError } = await supabase.auth.signInWithPassword({
-      email: cleanEmail,
-      password: password
-    });
-
     let user = UserStore.findByEmail(cleanEmail);
+    let firebaseUserRecord: any = null;
 
-    if (supabaseError && !user) {
+    // Check Firebase for user record
+    try {
+      firebaseUserRecord = await firebaseAuth.getUserByEmail(cleanEmail);
+    } catch (e) {
+      // User not in Firebase yet
+    }
+
+    if (!user && !firebaseUserRecord) {
       return res.status(401).json({
         success: false,
         error: 'INVALID_CREDENTIALS',
-        message: supabaseError.message || 'Invalid email or password.'
+        message: 'Invalid email or password.'
       });
     }
 
     if (user) {
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-      if (!isPasswordValid && supabaseError) {
+      if (!isPasswordValid) {
         return res.status(401).json({
           success: false,
           error: 'INVALID_CREDENTIALS',
           message: 'Invalid email or password.'
         });
       }
-    } else if (supabaseAuthData?.user) {
-      // Sync user from Supabase if registered externally
+    } else if (firebaseUserRecord) {
+      // Sync user from Firebase if registered externally
       user = UserStore.save({
-        id: supabaseAuthData.user.id,
+        id: firebaseUserRecord.uid,
         email: cleanEmail,
         passwordHash: await bcrypt.hash(password, 10),
-        name: supabaseAuthData.user.user_metadata?.name || cleanEmail.substringBefore('@'),
-        isVerified: true,
+        name: firebaseUserRecord.displayName || cleanEmail.split('@')[0],
+        isVerified: firebaseUserRecord.emailVerified,
         verificationAttempts: 0,
-        createdAt: supabaseAuthData.user.created_at || new Date().toISOString()
+        createdAt: new Date().toISOString()
       });
     }
 
@@ -266,17 +263,17 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    const accessToken = supabaseAuthData?.session?.access_token || generateAccessToken({ userId: user!.id, email: user!.email });
-    const refreshToken = supabaseAuthData?.session?.refresh_token || generateRefreshToken({ userId: user!.id, email: user!.email });
+    const accessToken = generateAccessToken({ userId: user!.id, email: user!.email });
+    const refreshToken = generateRefreshToken({ userId: user!.id, email: user!.email });
 
     return res.status(200).json({
       success: true,
       accessToken,
       refreshToken,
       user: {
-        id: user?.id || supabaseAuthData?.user?.id,
+        id: user!.id,
         email: cleanEmail,
-        name: user?.name || supabaseAuthData?.user?.user_metadata?.name || cleanEmail,
+        name: user!.name,
         isVerified: true
       }
     });

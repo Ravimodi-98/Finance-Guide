@@ -109,6 +109,11 @@ class SettingsManager(context: Context) {
         return prefs.getString("pending_code_${email.lowercase().trim()}", null)
     }
 
+    fun verifyPendingCode(email: String, code: String): Boolean {
+        val stored = getPendingVerificationCode(email)
+        return stored != null && stored == code.trim()
+    }
+
     private fun getUserNamePreference(): String {
         return prefs.getString("user_name", "Monkey D. Luffy") ?: "Monkey D. Luffy"
     }
