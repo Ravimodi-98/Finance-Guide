@@ -98,6 +98,17 @@ class SettingsManager(context: Context) {
         return prefs.getBoolean("is_logged_in", false)
     }
 
+    fun savePendingVerificationCode(email: String, code: String) {
+        prefs.edit()
+            .putString("pending_email", email.lowercase().trim())
+            .putString("pending_code_${email.lowercase().trim()}", code.trim())
+            .apply()
+    }
+
+    fun getPendingVerificationCode(email: String): String? {
+        return prefs.getString("pending_code_${email.lowercase().trim()}", null)
+    }
+
     private fun getUserNamePreference(): String {
         return prefs.getString("user_name", "Monkey D. Luffy") ?: "Monkey D. Luffy"
     }

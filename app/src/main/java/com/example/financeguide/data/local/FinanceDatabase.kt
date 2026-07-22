@@ -13,7 +13,7 @@ import com.example.financeguide.data.local.entity.*
         TransactionEntity::class,
         BudgetEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class FinanceDatabase : RoomDatabase() {

@@ -8,14 +8,6 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface FinanceApiService {
-    @POST("api/chat")
-    suspend fun chat(
-        @Body request: ChatRequestDto
-    ): Response<ChatResponseDto>
-
-    @POST("api/chat/reset")
-    suspend fun resetChat(): Response<Unit>
-
     @POST("api/auth/register")
     suspend fun register(
         @Body request: Map<String, String>
@@ -35,14 +27,4 @@ interface FinanceApiService {
     suspend fun resendVerification(
         @Body request: ResendVerificationRequestDto
     ): Response<ResendVerificationResponseDto>
-
-    @GET("api/markets/news")
-    suspend fun getNews(
-        @Query("force") force: Boolean = false
-    ): Response<NewsResponseDto>
-
-    @GET("api/markets/exchange")
-    suspend fun getExchangeRates(
-        @Query("force") force: Boolean = false
-    ): Response<ExchangeResponseDto>
 }

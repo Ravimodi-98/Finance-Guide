@@ -1,11 +1,12 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import chatRoutes from './routes/chatRoutes';
 import marketsRoutes from './routes/marketsRoutes';
 import { rateLimiter } from './middlewares/rateLimiter';
 import { errorHandler } from './middlewares/errorMiddleware';
-import { config } from './config/gemini';
 import { logger } from './utils/logger';
 import * as authController from './controllers/authController';
 
@@ -38,13 +39,12 @@ app.post('/api/auth/resend-verification', authController.resendVerification);
 
 // Main application routes
 app.use('/api/markets', marketsRoutes);
-app.use('/api', chatRoutes);
 
 // Global unhandled error handler
 app.use(errorHandler);
 
 // Start listening
-const PORT = config.port || 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   logger.info(`Finance Navigator Backend is running on port ${PORT}`);
   if (process.env.RESEND_API_KEY) {

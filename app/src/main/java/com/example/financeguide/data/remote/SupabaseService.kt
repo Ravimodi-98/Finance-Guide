@@ -29,7 +29,18 @@ data class SupabaseUser(
 
 data class SupabaseAuthResponse(
     @SerializedName("access_token") val accessToken: String?,
-    @SerializedName("user") val user: SupabaseUser
+    @SerializedName("user") val user: SupabaseUser?
+)
+
+data class SupabaseVerifyOtpRequest(
+    @SerializedName("type") val type: String = "signup",
+    @SerializedName("email") val email: String,
+    @SerializedName("token") val token: String
+)
+
+data class SupabaseResendOtpRequest(
+    @SerializedName("type") val type: String = "signup",
+    @SerializedName("email") val email: String
 )
 
 // --- Database DTOs ---
@@ -70,6 +81,20 @@ interface SupabaseApi {
         @Header("Authorization") token: String,
         @Body request: SupabaseSignInRequest
     ): Response<SupabaseAuthResponse>
+
+    @POST("auth/v1/verify")
+    suspend fun verifyOtp(
+        @Header("apikey") apiKey: String,
+        @Header("Authorization") token: String,
+        @Body request: SupabaseVerifyOtpRequest
+    ): Response<SupabaseAuthResponse>
+
+    @POST("auth/v1/resend")
+    suspend fun resendOtp(
+        @Header("apikey") apiKey: String,
+        @Header("Authorization") token: String,
+        @Body request: SupabaseResendOtpRequest
+    ): Response<Unit>
 
     // Transactions Table
     @GET("rest/v1/transactions")

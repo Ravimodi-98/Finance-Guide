@@ -48,7 +48,6 @@ fun DashboardScreen(
     viewModel: FinanceViewModel,
     onAddIncome: () -> Unit = {},
     onAddExpense: () -> Unit = {},
-    onNavigateToAI: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val summary by viewModel.summary.collectAsStateWithLifecycle()
@@ -88,24 +87,6 @@ fun DashboardScreen(
                             text = strings.dashboardTitle,
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
                         )
-                        IconButton(
-                            onClick = onNavigateToAI
-                        ) {
-                            when (strings.chatbotName) {
-                                "Spider-Man" -> com.example.financeguide.ui.components.SpiderManAvatar(
-                                    modifier = Modifier.size(32.dp)
-                                )
-                                "FinBot" -> com.example.financeguide.ui.screen.ai.FinBotAvatar(
-                                    modifier = Modifier.size(32.dp)
-                                )
-                                else -> Icon(
-                                    imageVector = Icons.Rounded.Explore,
-                                    contentDescription = "Finance Navigator",
-                                    tint = com.example.financeguide.theme.Secondary,
-                                    modifier = Modifier.size(28.dp)
-                                )
-                            }
-                        }
                     }
                     BalanceCard(
                         balance = summary.balance,

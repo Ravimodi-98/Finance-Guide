@@ -18,12 +18,8 @@ import com.example.financeguide.ui.FinanceViewModel
 import com.example.financeguide.ui.screen.budget.BudgetScreen
 import com.example.financeguide.ui.screen.dashboard.DashboardScreen
 import com.example.financeguide.ui.screen.insights.InsightsScreen
-import com.example.financeguide.ui.screen.markets.MarketsScreen
-import com.example.financeguide.ui.screen.markets.MarketsViewModel
 import com.example.financeguide.ui.screen.settings.SettingsScreen
 import com.example.financeguide.ui.screen.transaction.AddTransactionScreen
-import com.example.financeguide.ui.screen.ai.FinanceAIScreen
-import com.example.financeguide.ui.screen.ai.FinanceAIViewModel
 
 @Composable
 fun FinanceNavGraph(
@@ -39,7 +35,7 @@ fun FinanceNavGraph(
 
     Scaffold(
         bottomBar = {
-            if (currentRoute != "finance_ai" && !currentRoute.startsWith("add_transaction")) {
+            if (!currentRoute.startsWith("add_transaction")) {
                 BottomNavBar(
                     currentDestination = currentDestination,
                     onNavigateToDestination = { destination ->
@@ -74,9 +70,6 @@ fun FinanceNavGraph(
                     },
                     onAddExpense = {
                         navController.navigate("add_transaction/EXPENSE")
-                    },
-                    onNavigateToAI = {
-                        navController.navigate("finance_ai")
                     }
                 )
             }
@@ -106,26 +99,11 @@ fun FinanceNavGraph(
                     initialType = initialType
                 )
             }
-            composable(TopLevelDestination.MARKETS.route) {
-                val marketsViewModel: MarketsViewModel = viewModel(
-                    factory = appContainer.marketsViewModelFactory
-                )
-                MarketsScreen(viewModel = marketsViewModel)
-            }
             composable(TopLevelDestination.INSIGHTS.route) {
                 InsightsScreen(viewModel = viewModel)
             }
             composable(TopLevelDestination.SETTINGS.route) {
                 SettingsScreen(settingsManager = appContainer.settingsManager)
-            }
-            composable("finance_ai") {
-                val aiViewModel: FinanceAIViewModel = viewModel(
-                    factory = appContainer.financeAIViewModelFactory
-                )
-                FinanceAIScreen(
-                    viewModel = aiViewModel,
-                    onBack = { navController.navigateUp() }
-                )
             }
         }
     }

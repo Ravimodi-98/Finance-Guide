@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.CloudQueue
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Explore
@@ -291,7 +292,7 @@ fun SettingsScreen(
                     Toast.makeText(context, "Starting App Tour...", Toast.LENGTH_SHORT).show()
                 }
             )
-            
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             SettingsSection(title = "Data")
             

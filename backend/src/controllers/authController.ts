@@ -247,10 +247,22 @@ export const login = async (req: Request, res: Response) => {
     }
 
     if (user && !user.isVerified) {
+      const now = Date.now();
+      if (!user.verificationCodeExpiresAt || now > user.verificationCodeExpiresAt || !user.lastResendAt || now - user.lastResendAt > 30000) {
+        const code = generateSecure6DigitCode();
+        user.verificationCodeHash = await bcrypt.hash(code, 10);
+        user.verificationCodeExpiresAt = now + 10 * 60 * 1000;
+        user.verificationAttempts = 0;
+        user.lastResendAt = now;
+        UserStore.save(user);
+        await sendVerificationEmail(cleanEmail, code);
+      }
+
       return res.status(403).json({
         success: false,
+        requiresVerification: true,
         error: 'EMAIL_NOT_VERIFIED',
-        message: 'Please verify your email first.'
+        message: 'Your email is not verified yet. A 6-digit verification code has been sent to your email.'
       });
     }
 
