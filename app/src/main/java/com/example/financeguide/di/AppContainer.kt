@@ -80,15 +80,10 @@ class AppContainer(private val context: Context) {
     }
 
     val chatbotRepository: ChatbotRepository by lazy {
-        val key = String(
-            android.util.Base64.decode(
-                "QVEuQWI4Uk42TDlVU2xDSHRzMnVLaUt2TWVKOXluelNIcFlMTU95R0ZCVHF6aXJOSlYzV2c=",
-                android.util.Base64.DEFAULT
-            )
-        )
         ChatbotRepository(
             geminiApiService = geminiApiService,
-            apiKey = key
+            okHttpClient = okHttpClient,
+            settingsManager = settingsManager
         )
     }
 

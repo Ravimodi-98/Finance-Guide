@@ -59,7 +59,10 @@ import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material.icons.rounded.NorthEast
 import androidx.compose.material.icons.rounded.Psychology
 import androidx.compose.material.icons.rounded.Savings
+import androidx.compose.material.icons.rounded.VpnKey
+import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material3.Button
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -134,7 +137,11 @@ fun ChatbotScreen(
 
     var inputText by remember { mutableStateOf("") }
     var showClearDialog by remember { mutableStateOf(false) }
+    var showApiKeyDialog by remember { mutableStateOf(false) }
     var selectedCategoryIndex by remember { mutableIntStateOf(0) }
+
+    val apiKey by viewModel.apiKey.collectAsStateWithLifecycle()
+    val selectedModel by viewModel.selectedModel.collectAsStateWithLifecycle()
 
     val isSpidey = themeMode == "spiderman"
     val isBasic = themeMode == "basic"
@@ -239,8 +246,10 @@ fun ChatbotScreen(
                 headerGradient = headerGradient,
                 primaryAccent = primaryAccent,
                 hasMessages = messages.isNotEmpty(),
+                hasApiKey = apiKey.isNotBlank(),
                 onBack = onBack,
-                onClearClick = { showClearDialog = true }
+                onClearClick = { showClearDialog = true },
+                onKeyClick = { showApiKeyDialog = true }
             )
         },
         bottomBar = {
@@ -272,50 +281,107 @@ fun ChatbotScreen(
             // Ambient glowing background orbs
             ChatAmbientGlow(glowGradient = glowGradient)
 
-            if (messages.isEmpty() && !isLoading) {
-                // Creative Welcome Hero Screen
-                CreativeWelcomeView(
-                    themeMode = themeMode,
-                    strings = strings,
-                    primaryAccent = primaryAccent,
-                    secondaryAccent = secondaryAccent,
-                    headerGradient = headerGradient,
-                    categories = topicCategories,
-                    selectedCategoryIndex = selectedCategoryIndex,
-                    onSelectCategory = { selectedCategoryIndex = it },
-                    onPromptSelected = { prompt ->
-                        viewModel.sendMessage(prompt)
+            Column(modifier = Modifier.fillMaxSize()) {
+                if (apiKey.isBlank()) {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.35f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.6f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.VpnKey,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = "Gemini API Key Required",
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Text(
+                                        text = "Paste your API key to activate the Finance AI.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(
+                                onClick = { showApiKeyDialog = true },
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text("Paste Key", fontSize = 12.sp)
+                            }
+                        }
                     }
-                )
-            } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(messages, key = { it.id }) { message ->
-                        ModernChatBubble(
-                            message = message,
-                            userGradient = userBubbleGradient,
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    if (messages.isEmpty() && !isLoading) {
+                        // Creative Welcome Hero Screen
+                        CreativeWelcomeView(
                             themeMode = themeMode,
+                            strings = strings,
                             primaryAccent = primaryAccent,
-                            botName = strings.chatbotName,
-                            onCopy = { textToCopy ->
-                                clipboardManager.setText(AnnotatedString(textToCopy))
-                                Toast.makeText(context, strings.copiedToast, Toast.LENGTH_SHORT).show()
+                            secondaryAccent = secondaryAccent,
+                            headerGradient = headerGradient,
+                            categories = topicCategories,
+                            selectedCategoryIndex = selectedCategoryIndex,
+                            onSelectCategory = { selectedCategoryIndex = it },
+                            onPromptSelected = { prompt ->
+                                viewModel.sendMessage(prompt)
                             }
                         )
-                    }
+                    } else {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(messages, key = { it.id }) { message ->
+                                ModernChatBubble(
+                                    message = message,
+                                    userGradient = userBubbleGradient,
+                                    themeMode = themeMode,
+                                    primaryAccent = primaryAccent,
+                                    botName = strings.chatbotName,
+                                    onCopy = { textToCopy ->
+                                        clipboardManager.setText(AnnotatedString(textToCopy))
+                                        Toast.makeText(context, strings.copiedToast, Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
 
-                    if (isLoading) {
-                        item {
-                            ModernTypingIndicator(
-                                themeMode = themeMode,
-                                primaryAccent = primaryAccent,
-                                secondaryAccent = secondaryAccent,
-                                botName = strings.chatbotName
-                            )
+                            if (isLoading) {
+                                item {
+                                    ModernTypingIndicator(
+                                        themeMode = themeMode,
+                                        primaryAccent = primaryAccent,
+                                        secondaryAccent = secondaryAccent,
+                                        botName = strings.chatbotName
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -364,6 +430,151 @@ fun ChatbotScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showClearDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    // API Key & Model Configuration Dialog
+    if (showApiKeyDialog) {
+        var tempKey by remember { mutableStateOf(apiKey) }
+        var tempModel by remember { mutableStateOf(selectedModel) }
+
+        val commonModels = listOf(
+            "minimaxai/minimax-m3.1-flash",
+            "gemini-3.8-flash",
+            "gemini-3.5-flash",
+            "deepseek-ai/deepseek-v4.1-flash",
+            "meta/llama-3.1-8b-instruct"
+        )
+
+        AlertDialog(
+            onDismissRequest = { showApiKeyDialog = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.VpnKey,
+                    contentDescription = null,
+                    tint = primaryAccent,
+                    modifier = Modifier.size(32.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "AI Model & API Key",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "Paste your Gemini API key below. The AI will only work when an API key is configured.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    OutlinedTextField(
+                        value = tempKey,
+                        onValueChange = { tempKey = it },
+                        label = { Text("Gemini API Key") },
+                        placeholder = { Text("Paste API key here...") },
+                        singleLine = false,
+                        maxLines = 3,
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            if (tempKey.isNotEmpty()) {
+                                IconButton(onClick = { tempKey = "" }) {
+                                    Icon(Icons.Rounded.Close, contentDescription = "Clear")
+                                }
+                            }
+                        }
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(
+                            onClick = {
+                                val clip = clipboardManager.getText()?.text
+                                if (!clip.isNullOrBlank()) {
+                                    tempKey = clip.trim()
+                                    Toast.makeText(context, "Pasted from clipboard", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Clipboard is empty", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Rounded.ContentPaste, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Paste from Clipboard")
+                        }
+                    }
+
+                    Text(
+                        text = "Model Preset",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(commonModels) { modelName ->
+                            val isSelected = tempModel == modelName
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isSelected) primaryAccent.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant,
+                                border = if (isSelected) androidx.compose.foundation.BorderStroke(1.dp, primaryAccent) else null,
+                                modifier = Modifier.clickable {
+                                    tempModel = modelName
+                                }
+                            ) {
+                                Text(
+                                    text = modelName,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (isSelected) primaryAccent else MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = tempModel,
+                        onValueChange = { tempModel = it },
+                        label = { Text("Selected Model") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Text(
+                        text = "Tip: Generate an API key from Google AI Studio (aistudio.google.com)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = primaryAccent.copy(alpha = 0.9f)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.updateApiKey(tempKey)
+                        viewModel.updateModel(tempModel)
+                        showApiKeyDialog = false
+                        Toast.makeText(context, "API Key & Model saved!", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = primaryAccent)
+                ) {
+                    Text("Save & Apply")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showApiKeyDialog = false }) {
                     Text("Cancel")
                 }
             },
@@ -440,8 +651,10 @@ fun ModernChatTopBar(
     headerGradient: List<Color>,
     primaryAccent: Color,
     hasMessages: Boolean,
+    hasApiKey: Boolean,
     onBack: () -> Unit,
-    onClearClick: () -> Unit
+    onClearClick: () -> Unit,
+    onKeyClick: () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "avatarPulse")
     val haloScale by infiniteTransition.animateFloat(
@@ -567,6 +780,17 @@ fun ModernChatTopBar(
             }
         },
         actions = {
+            IconButton(
+                onClick = onKeyClick,
+                modifier = Modifier
+                    .clip(CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.VpnKey,
+                    contentDescription = "AI API Key",
+                    tint = if (hasApiKey) primaryAccent else MaterialTheme.colorScheme.error
+                )
+            }
             if (hasMessages) {
                 IconButton(
                     onClick = onClearClick,

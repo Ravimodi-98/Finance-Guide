@@ -17,6 +17,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.CloudQueue
+import androidx.compose.material.icons.rounded.VpnKey
+import androidx.compose.material.icons.rounded.Psychology
+import androidx.compose.material.icons.rounded.ContentPaste
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.material.icons.rounded.ColorLens
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Explore
@@ -77,7 +84,10 @@ fun SettingsScreen(
     val userName by settingsManager.userName.collectAsState()
     val userEmail by settingsManager.userEmail.collectAsState()
     val userAvatar by settingsManager.userAvatar.collectAsState()
+    val geminiApiKey by settingsManager.geminiApiKey.collectAsState()
+    val geminiModel by settingsManager.geminiModel.collectAsState()
     val strings = LocalThemeStrings.current
+    val clipboardManager = LocalClipboardManager.current
 
     val currentThemeName = when (themeMode) {
         "onepiece" -> "One Piece Theme"
@@ -186,6 +196,7 @@ fun SettingsScreen(
     var showExportDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
     var showEditProfileDialog by remember { mutableStateOf(false) }
+    var showApiKeyDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier
@@ -291,6 +302,23 @@ fun SettingsScreen(
                     settingsManager.setOnboardingCompleted(false)
                     Toast.makeText(context, "Starting App Tour...", Toast.LENGTH_SHORT).show()
                 }
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            SettingsSection(title = "AI Configuration")
+
+            SettingsClickableItem(
+                icon = Icons.Rounded.VpnKey,
+                title = "Gemini API Key",
+                subtitle = if (geminiApiKey.isBlank()) "No key set (Tap to paste)" else "${geminiApiKey.take(8)}...${geminiApiKey.takeLast(6)}",
+                onClick = { showApiKeyDialog = true }
+            )
+
+            SettingsClickableItem(
+                icon = Icons.Rounded.Psychology,
+                title = "AI Model",
+                subtitle = geminiModel,
+                onClick = { showApiKeyDialog = true }
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -570,6 +598,149 @@ fun SettingsScreen(
             dismissButton = {
                 TextButton(onClick = { showEditProfileDialog = false }) { Text("Cancel") }
             }
+        )
+    }
+
+    if (showApiKeyDialog) {
+        var tempKey by remember { mutableStateOf(geminiApiKey) }
+        var tempModel by remember { mutableStateOf(geminiModel) }
+
+        val commonModels = listOf(
+            "minimaxai/minimax-m3.1-flash",
+            "gemini-3.8-flash",
+            "gemini-3.5-flash",
+            "deepseek-ai/deepseek-v4.1-flash",
+            "meta/llama-3.1-8b-instruct"
+        )
+
+        AlertDialog(
+            onDismissRequest = { showApiKeyDialog = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.VpnKey,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "AI Model & API Key",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "Paste your Gemini API key below. The Finance AI only operates when an API key is provided.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    OutlinedTextField(
+                        value = tempKey,
+                        onValueChange = { tempKey = it },
+                        label = { Text("Gemini API Key") },
+                        placeholder = { Text("Paste key here...") },
+                        singleLine = false,
+                        maxLines = 3,
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            if (tempKey.isNotEmpty()) {
+                                IconButton(onClick = { tempKey = "" }) {
+                                    Icon(Icons.Rounded.Close, contentDescription = "Clear")
+                                }
+                            }
+                        }
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(
+                            onClick = {
+                                val clip = clipboardManager.getText()?.text
+                                if (!clip.isNullOrBlank()) {
+                                    tempKey = clip.trim()
+                                    Toast.makeText(context, "Pasted from clipboard", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Clipboard is empty", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Rounded.ContentPaste, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Paste from Clipboard")
+                        }
+                    }
+
+                    Text(
+                        text = "Model Preset",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(commonModels) { modelName ->
+                            val isSelected = tempModel == modelName
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant,
+                                border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null,
+                                modifier = Modifier.clickable {
+                                    tempModel = modelName
+                                }
+                            ) {
+                                Text(
+                                    text = modelName,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = tempModel,
+                        onValueChange = { tempModel = it },
+                        label = { Text("Selected Model") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Text(
+                        text = "Tip: You can create a free key at aistudio.google.com",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        settingsManager.setGeminiApiKey(tempKey)
+                        settingsManager.setGeminiModel(tempModel)
+                        showApiKeyDialog = false
+                        Toast.makeText(context, "API Key & Model updated!", Toast.LENGTH_SHORT).show()
+                    }
+                ) {
+                    Text("Save & Apply")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showApiKeyDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(20.dp)
         )
     }
 }

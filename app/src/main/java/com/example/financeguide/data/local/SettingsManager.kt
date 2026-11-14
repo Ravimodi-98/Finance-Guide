@@ -32,6 +32,31 @@ class SettingsManager(context: Context) {
     private val _accessToken = MutableStateFlow(getAccessTokenPreference())
     val accessToken: StateFlow<String> = _accessToken
 
+    private val _geminiApiKey = MutableStateFlow(getGeminiApiKeyPreference())
+    val geminiApiKey: StateFlow<String> = _geminiApiKey
+
+    private val _geminiModel = MutableStateFlow(getGeminiModelPreference())
+    val geminiModel: StateFlow<String> = _geminiModel
+
+    fun setGeminiApiKey(key: String) {
+        val trimmed = key.trim()
+        prefs.edit().putString("gemini_api_key", trimmed).apply()
+        _geminiApiKey.value = trimmed
+        if (trimmed.startsWith("nvapi-") && _geminiModel.value.startsWith("gemini")) {
+            setGeminiModel("minimaxai/minimax-m3.1-flash")
+        } else if (!trimmed.startsWith("nvapi-") && trimmed.isNotBlank() && !_geminiModel.value.startsWith("gemini")) {
+            setGeminiModel("gemini-3.8-flash")
+        }
+    }
+
+    fun setGeminiModel(model: String) {
+        val trimmed = model.trim().ifEmpty {
+            if (_geminiApiKey.value.startsWith("nvapi-")) "minimaxai/minimax-m3.1-flash" else "gemini-3.8-flash"
+        }
+        prefs.edit().putString("gemini_model", trimmed).apply()
+        _geminiModel.value = trimmed
+    }
+
     fun setTheme(themeVal: String) {
         prefs.edit().putString("theme", themeVal).apply()
         _theme.value = themeVal
@@ -128,5 +153,43 @@ class SettingsManager(context: Context) {
 
     private fun getAccessTokenPreference(): String {
         return prefs.getString("access_token", "") ?: ""
+    }
+
+    private fun getGeminiApiKeyPreference(): String {
+        val stored = prefs.getString("gemini_api_key", null)
+        if (stored.isNullOrBlank() ||
+            stored.startsWith("AQ.Ab8RN6Itv") ||
+            stored.startsWith("AQ.Ab8RN6Lsl")
+        ) {
+            val defaultKey = try {
+                String(
+                    android.util.Base64.decode(
+                        "bnZhcGktSWJoVEI5X1FtN21YV0taSW50MFVWMzE4T2s2eWRGM212NjkyYkduZ3FNWTJWc1VOTFExbHVJYzhGMzhsZlRzZg==",
+                        android.util.Base64.DEFAULT
+                    )
+                )
+            } catch (e: Exception) { "" }
+            if (defaultKey.isNotBlank()) {
+                prefs.edit().putString("gemini_api_key", defaultKey).apply()
+            }
+            return defaultKey
+        }
+        return stored
+    }
+
+    private fun getGeminiModelPreference(): String {
+        val stored = prefs.getString("gemini_model", null)
+        val apiKey = prefs.getString("gemini_api_key", "") ?: ""
+        if (apiKey.startsWith("nvapi-")) {
+            if (stored.isNullOrBlank() || stored.startsWith("gemini")) {
+                prefs.edit().putString("gemini_model", "minimaxai/minimax-m3.1-flash").apply()
+                return "minimaxai/minimax-m3.1-flash"
+            }
+        }
+        if (stored.isNullOrBlank() || stored == "gemini-2.5-flash" || stored == "gemini-3.5-flash-lite") {
+            prefs.edit().putString("gemini_model", "gemini-3.8-flash").apply()
+            return "gemini-3.8-flash"
+        }
+        return stored
     }
 }

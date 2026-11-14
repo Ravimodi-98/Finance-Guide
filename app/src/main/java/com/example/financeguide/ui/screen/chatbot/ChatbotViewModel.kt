@@ -22,6 +22,12 @@ class ChatbotViewModel(
     val themeMode: StateFlow<String> = settingsManager.theme
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "onepiece")
 
+    val apiKey: StateFlow<String> = settingsManager.geminiApiKey
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+
+    val selectedModel: StateFlow<String> = settingsManager.geminiModel
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "gemini-2.5-flash")
+
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
@@ -30,6 +36,14 @@ class ChatbotViewModel(
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    fun updateApiKey(newKey: String) {
+        settingsManager.setGeminiApiKey(newKey)
+    }
+
+    fun updateModel(newModel: String) {
+        settingsManager.setGeminiModel(newModel)
+    }
 
     fun sendMessage(userText: String) {
         val trimmed = userText.trim()
