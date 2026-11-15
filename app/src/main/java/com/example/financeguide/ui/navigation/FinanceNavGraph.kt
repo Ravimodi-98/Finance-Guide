@@ -12,12 +12,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.financeguide.domain.model.TransactionType
 import com.example.financeguide.ui.FinanceViewModel
 import com.example.financeguide.ui.screen.budget.BudgetScreen
-import com.example.financeguide.ui.screen.chatbot.ChatbotScreen
-import com.example.financeguide.ui.screen.chatbot.ChatbotViewModel
 import com.example.financeguide.ui.screen.dashboard.DashboardScreen
 import com.example.financeguide.ui.screen.insights.InsightsScreen
 import com.example.financeguide.ui.screen.settings.SettingsScreen
@@ -37,7 +34,7 @@ fun FinanceNavGraph(
 
     Scaffold(
         bottomBar = {
-            if (!currentRoute.startsWith("add_transaction") && currentRoute != "chatbot") {
+            if (!currentRoute.startsWith("add_transaction")) {
                 BottomNavBar(
                     currentDestination = currentDestination,
                     onNavigateToDestination = { destination ->
@@ -72,9 +69,6 @@ fun FinanceNavGraph(
                     },
                     onAddExpense = {
                         navController.navigate("add_transaction/EXPENSE")
-                    },
-                    onNavigateToChatbot = {
-                        navController.navigate("chatbot")
                     }
                 )
             }
@@ -106,25 +100,12 @@ fun FinanceNavGraph(
             }
             composable(TopLevelDestination.INSIGHTS.route) {
                 InsightsScreen(
-                    viewModel = viewModel,
-                    onNavigateToChatbot = {
-                        navController.navigate("chatbot")
-                    }
+                    viewModel = viewModel
                 )
             }
             composable(TopLevelDestination.SETTINGS.route) {
                 SettingsScreen(settingsManager = appContainer.settingsManager)
             }
-            composable("chatbot") {
-                val chatbotViewModel: ChatbotViewModel = viewModel(
-                    factory = appContainer.chatbotViewModelFactory
-                )
-                ChatbotScreen(
-                    viewModel = chatbotViewModel,
-                    onBack = { navController.navigateUp() }
-                )
-            }
         }
     }
 }
-

@@ -1,68 +1,64 @@
-# 💳 Finance Guide - AI-Powered Personal Finance & Budget Tracker
+# 💳 Finance Guide - Personal Finance & Budget Tracker
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.20-7F52FF.svg?logo=kotlin)](https://kotlinlang.org/)
 [![Android Studio](https://img.shields.io/badge/Android%20Studio-Jetpack%20Compose-3DDC84.svg?logo=androidstudio)](https://developer.android.com/jetpack/compose)
 [![Material 3](https://img.shields.io/badge/Material--3-Compose%20M3-8250DF.svg)](https://m3.material.io/)
 [![Architecture](https://img.shields.io/badge/Architecture-MVVM%20%2B%20Clean-orange.svg)](https://developer.android.com/topic/architecture)
 [![Database](https://img.shields.io/badge/Database-Room%20%2B%20KSP-4285F4.svg)](https://developer.android.com/training/data-storage/room)
-[![AI Engine](https://img.shields.io/badge/AI-Gemini%203.5%20Flash-00B4D8.svg?logo=google)](https://deepmind.google/technologies/gemini/)
+[![Download APK](https://img.shields.io/badge/Download-APK%20(v1.0)-success?style=for-the-badge&logo=android)](https://github.com/Ravimodi-98/Finance-Guide/raw/main/FinanceGuide.apk)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**Finance Guide** is an intelligent, feature-packed personal finance and wealth management Android application designed with modern aesthetics and cutting-edge mobile architecture. Combining **Jetpack Compose (Material 3)**, **Room Database**, and **Google Gemini AI**, Finance Guide offers real-time financial tracking, budget control, visual spending analytics, and an interactive **AI Financial Advisor** adapted to multiple themed personas.
+**Finance Guide** is a modern, offline-first personal finance and wealth management Android application designed with cutting-edge mobile architecture. Combining **Jetpack Compose (Material 3)**, **Room Database**, and a customizable **Multi-Theme Engine**, Finance Guide offers seamless transaction tracking, budget limit control, visual spending analytics, and intelligent financial insights.
+
+---
+
+## 📥 Download App (APK)
+
+Get the latest ready-to-install Android package directly:
+
+[![Download APK](https://img.shields.io/badge/Download%20APK-v1.0%20(Direct%20Download)-2ea44f?style=for-the-badge&logo=android)](https://github.com/Ravimodi-98/Finance-Guide/raw/main/FinanceGuide.apk)
+
+> 🔗 **Direct Download Link**: [Download FinanceGuide.apk](https://github.com/Ravimodi-98/Finance-Guide/raw/main/FinanceGuide.apk)  
+> *Compatible with Android 7.0 (API 24) and higher.*
 
 ---
 
 ## 🌟 Key Features
 
-### 🤖 1. Creative & Modern AI Financial Advisor (Gemini Powered)
-- **Interactive Multi-Persona AI**: Chat with your financial advisor tailored to your active theme:
-  - 🏴‍☠️ **Nami (One Piece Navigator)**: Treasure management, pirate market wisdom, and savings routes.
-  - 🕷️ **Spider-Man (Neighborhood Web Guide)**: Suit budget management, mission costs, and investing with great responsibility.
-  - 📈 **FinBot (Finance Pro Advisor)**: Quantitative market insights, 50/30/20 budget allocations, and wealth strategies.
-- **Interactive Topic Hub**: One-tap query suggestions across 4 core financial pillars:
-  - 📊 *Market & Growth* (ETFs, Stocks, Compound Interest, IPOs)
-  - 💡 *Smart Budgeting* (50/30/20 Rule, Impulse spending control)
-  - 🛡️ *Security & Debt* (Emergency funds, Avalanche vs Snowball debt payoff, Inflation protection)
-  - ⚡ *Quick Log & Wealth* (Actionable financial rules, bonus investment strategies)
-- **Dynamic AI Soundwave Visualizer**: Real-time 4-bar equalizer and rotating thinking statuses (*"Analyzing financial signals..."*, *"Formulating smart advice..."*).
-- **Rich Markdown Formatting**: Automatic parsing and formatting of bold headers, structured bullet lists, numeric steps, monospace financial calculation cards, and 1-tap message copying with visual checkmark feedback.
-- **Flawless Keyboard Inset Handling**: Smooth window insets integration (`WindowInsets.ime.union(navigationBars)`) with zero dead space and automatic list scrolling.
+### 💰 1. Income & Expense Management
+- **Quick Logging**: Fast and fluid transaction logging for both income and expenses with customizable categories, notes, and timestamps.
+- **Dynamic Balance Card**: Real-time overview of your net worth, total monthly income, and total expenses with interactive quick-action shortcuts.
+- **Transaction History**: Comprehensive recent transaction lists with editing, category identification, and filtering.
 
 ---
 
-### 🎨 2. Multi-Theme Universe Engine
+### 🎯 2. Smart Budget Limits & Alerts
+- **Category Budgets**: Set custom monthly spending thresholds for essential categories (Food, Bills, Transport, Entertainment, Shopping, Health, etc.).
+- **Real-Time Progress Tracking**: Color-coded progress indicators warning you when you approach or exceed 80% and 100% of your allocated budget.
+
+---
+
+### 📊 3. Visual Analytics & Donut Charts
+- **Interactive Donut Charts**: Beautiful custom Jetpack Compose charts visualizing spending and earning distributions.
+- **Category Breakdowns**: Detailed percentage analytics and category totals to help identify spending leaks and boost savings potential.
+
+---
+
+### 🎨 4. Multi-Theme Universe Engine
 Customize your entire UI experience across typography, gradients, animations, and icons:
+
 | Theme | Aesthetic Palette | Persona & Icon |
 | :--- | :--- | :--- |
-| **Finance Pro** (Default) | Electric Mint Emerald, Cyber Cyan, Obsidian Dark Navy | FinBot • High-Tech Growth Shield Logo |
-| **Spider-Man** | Crimson Red, Royal Electric Blue, Matte Carbon Slate | Spider-Man • Custom Mask Vector Logo |
-| **One Piece** | Straw Hat Gold, Luffy Crimson, Ocean Navy | Nami • Straw Hat Vector Logo |
+| **Finance Pro** (Default) | Electric Mint Emerald, Cyber Cyan, Obsidian Dark Navy | Professional FinBot Growth Shield |
+| **Spider-Man** | Crimson Red, Royal Electric Blue, Matte Carbon Slate | Web Slinger Custom Mask Vector |
+| **One Piece** | Straw Hat Gold, Luffy Crimson, Ocean Navy | Pirate King Straw Hat Vector |
 
 ---
 
-### 💰 3. Income & Expense Management
-- Quick logging of Income & Expense transactions with customizable categories, custom notes, and timestamps.
-- Dynamic balance cards displaying total net worth, total income, and total expenses.
-- One-tap quick actions directly from the home dashboard.
-
----
-
-### 🎯 4. Smart Budget Limits & Monitoring
-- Define monthly spending limits across primary life categories (Food, Rent, Bills, Shopping, Transport, etc.).
-- Real-time budget consumption progress bars with percentage indicators and warning states.
-
----
-
-### 📊 5. Visual Insights & Donut Analytics
-- Dynamic Compose **Donut Charts** illustrating your exact expense and income distribution.
-- Interactive category breakdown cards and trend analytics.
-- Direct shortcut to launch AI financial analysis on your current spending.
-
----
-
-### 🔒 6. Privacy & Offline-First Storage
-- Fully functional in offline mode with complete local persistence via **Room DB** and **DataStore / SharedPreferences**.
-- Secure authentication system supporting guest/offline mode as well as registered user profiles.
+### 🔒 5. Privacy & Offline-First Storage
+- **100% Offline-First**: All your financial data is stored locally on your device using **Room Database** and **DataStore / SharedPreferences**.
+- **No Cloud Dependency**: Complete privacy with zero external tracking or mandatory server syncing.
+- **Guest & User Modes**: Seamlessly switch between guest mode and personal profile management.
 
 ---
 
@@ -72,32 +68,31 @@ Customize your entire UI experience across typography, gradients, animations, an
 app/src/main/java/com/example/financeguide/
  ├── data/
  │    ├── local/         # Room Database, DAOs, Entities, SettingsManager
- │    ├── remote/        # Gemini API Service & Request/Response Models (Retrofit + OkHttp)
- │    └── repository/    # FinanceRepository, AuthRepository, ChatbotRepository
+ │    └── repository/    # FinanceRepository, AuthRepository
  ├── di/                 # AppContainer Dependency Injection
  ├── domain/
- │    ├── model/         # Transaction, Budget, ChatMessage, User domain models
- │    └── usecase/       # Financial business logic & calculation rules
+ │    ├── model/         # Transaction, Budget, Category, User domain models
+ │    └── usecase/       # Financial business logic & suggestion algorithms
  ├── theme/              # Dynamic Theme System (Colors, Typography, ThemeStrings, Shapes)
  └── ui/
-      ├── components/    # BalanceCard, DonutChart, Animations, AnimatedCounter, Logotypes
+      ├── components/    # BalanceCard, DonutChart, Animations, AnimatedCounter
       ├── navigation/    # Jetpack Navigation Graph & Glassmorphic Bottom Bar
-      └── screen/        # Dashboard, Budget, Insights, Chatbot, Settings, Auth, Onboarding
+      └── screen/        # Dashboard, Budget, Insights, Settings, Auth, Onboarding
 ```
 
 - **Language**: Kotlin 2.0.20
-- **UI Framework**: Jetpack Compose with Material 3
-- **Network**: Retrofit 2.11 + OkHttp 4.12 + Gson
-- **Local Persistence**: Room Database (KSP) + Jetpack DataStore / SharedPreferences
+- **UI Framework**: Jetpack Compose (Material 3)
+- **Local Persistence**: Room Database (KSP) + SharedPreferences
+- **Architecture**: MVVM + Clean Architecture with Use Cases
 - **Asynchronous Flow**: Kotlin Coroutines & StateFlow (Lifecycle Compose)
-- **Image Loading**: Coil Compose
+- **Navigation**: Jetpack Navigation Compose
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started for Developers
 
 ### Prerequisites
-- **Android Studio** (Ladybug / Koala / Iguana or newer)
+- **Android Studio** (Koala / Ladybug or newer)
 - **JDK 17**
 - Android device or emulator running **Android 7.0 (API 24)** or higher
 
@@ -111,9 +106,9 @@ app/src/main/java/com/example/financeguide/
 
 2. **Open in Android Studio:**
    - Select `Open an Existing Project` and choose the cloned folder.
-   - Let Gradle sync all dependencies.
+   - Wait for Gradle to complete syncing.
 
-3. **Run on Device or Emulator:**
+3. **Build & Install:**
    ```bash
    ./gradlew installDebug
    ```

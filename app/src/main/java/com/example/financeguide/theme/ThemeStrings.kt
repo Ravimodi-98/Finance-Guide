@@ -3,7 +3,6 @@ package com.example.financeguide.theme
 import androidx.compose.runtime.compositionLocalOf
 
 data class ThemeStrings(
-    // App wide
     val appName: String,
     val signIn: String,
     val signInSubtitle: String,
@@ -13,8 +12,6 @@ data class ThemeStrings(
     val offlineButton: String,
     val registerPrompt: String,
     val registerButton: String,
-
-    // Onboarding
     val onboardingTitle: String,
     val setSailButton: String,
 
@@ -40,16 +37,8 @@ data class ThemeStrings(
     // Settings
     val currencyLabel: String,
 
-    // Chatbot
+    // Character Persona
     val chatbotName: String,
-    val chatbotTitle: String,
-    val chatbotStatusOnline: String,
-    val chatbotWelcomeTitle: String,
-    val chatbotWelcomeBody: String,
-    val chatbotWelcomeQuote: String,
-    val chatbotSuggest1: String,
-    val chatbotSuggest2: String,
-    val copiedToast: String,
 )
 
 val OnePieceStrings = ThemeStrings(
@@ -79,14 +68,6 @@ val OnePieceStrings = ThemeStrings(
     addBudgetTitle = "Add Bounty Limit",
     currencyLabel = "Bounty Currency",
     chatbotName = "Nami",
-    chatbotTitle = "Nami (Navigator)",
-    chatbotStatusOnline = "online",
-    chatbotWelcomeTitle = "Ahoy, Sailor! ⛵",
-    chatbotWelcomeBody = "I am Nami, your Finance Navigator! Ask me anything about stock markets, IPOs, banking & interest rates, financial news, mutual funds, emergency funds, or logging expenses!",
-    chatbotWelcomeQuote = "🗺️ \"Every Pirate King starts by mastering their treasure and market wisdom!\"",
-    chatbotSuggest1 = "I spent 500 Beli on food",
-    chatbotSuggest2 = "I earned 10000 Beli from a treasure hunt",
-    copiedToast = "Logbook copied to clipboard!",
 )
 
 val SpidermanStrings = ThemeStrings(
@@ -116,14 +97,6 @@ val SpidermanStrings = ThemeStrings(
     addBudgetTitle = "Add Mission Budget",
     currencyLabel = "Web Currency",
     chatbotName = "Spider-Man",
-    chatbotTitle = "Spider-Man (Web Guide)",
-    chatbotStatusOnline = "online & patrolling",
-    chatbotWelcomeTitle = "Hey, True Believer! 🕷️",
-    chatbotWelcomeBody = "I'm Spider-Man, your friendly neighborhood financial advisor! Ask me anything about stock markets, upcoming IPOs, banking & interest rates, financial market news, portfolio growth, or suit expenses!",
-    chatbotWelcomeQuote = "🕸️ \"With great power comes great responsibility — and that applies to your wallet and investments too!\"",
-    chatbotSuggest1 = "I spent 500 Credits on web cartridges",
-    chatbotSuggest2 = "I earned 10000 Credits from Daily Bugle photos",
-    copiedToast = "Case File copied to clipboard!",
 )
 
 val LocalThemeStrings = compositionLocalOf { OnePieceStrings }
@@ -155,12 +128,4 @@ val FinanceProStrings = ThemeStrings(
     addBudgetTitle = "Add Budget",
     currencyLabel = "Currency",
     chatbotName = "FinBot",
-    chatbotTitle = "FinBot (AI Advisor)",
-    chatbotStatusOnline = "online & analyzing 📊",
-    chatbotWelcomeTitle = "Hello, Investor! 📈",
-    chatbotWelcomeBody = "I'm FinBot, your AI-powered financial advisor. Ask me about stock markets, investment strategies, budgeting tips, expense tracking, savings goals, or anything finance!",
-    chatbotWelcomeQuote = "💰 \"The best investment you can make is in yourself and your financial future.\"",
-    chatbotSuggest1 = "I spent \$200 on groceries",
-    chatbotSuggest2 = "I earned \$5000 salary this month",
-    copiedToast = "Copied to clipboard!",
 )

@@ -54,7 +54,6 @@ import com.example.financeguide.ui.components.formatAmountString
 @Composable
 fun InsightsScreen(
     viewModel: FinanceViewModel,
-    onNavigateToChatbot: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val summary by viewModel.summary.collectAsStateWithLifecycle()
